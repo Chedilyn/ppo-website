@@ -379,13 +379,13 @@
     </div>
 
     <nav>
-        <a href="landingpage.html">Home</a>
-        <a href="signUp.html">Sign Up</a>
+        <a href="index.html">Home</a>
+        <a href="signup.html">Sign Up</a>
         <div class="login-dropdown">
             <a href="#" class="active">Login <i class="fa-solid fa-chevron-down" style="font-size: 10px; margin-left: 5px;"></i></a>
             <div class="dropdown-menu">
-                <a href="signIn.html"><i class="fa-solid fa-user" style="margin-right: 10px;"></i> User</a>
-                <a href="adminLogin.html"><i class="fa-solid fa-user-shield" style="margin-right: 10px;"></i> Administrator</a>
+                <a href="signin.html"><i class="fa-solid fa-user" style="margin-right: 10px;"></i> User</a>
+                <a href="adminlogin.html"><i class="fa-solid fa-user-shield" style="margin-right: 10px;"></i> Administrator</a>
             </div>
         </div>
     </nav>
@@ -501,7 +501,7 @@
       localStorage.setItem("ppoUserName", displayName);
       
       const role = result?.role || result;
-      window.location.href = role === "admin" ? "dashboardMenu.html" : "ProfileUser.html";
+      window.location.href = role === "admin" ? "dashboardmenu.html" : "profileuser.html";
     } catch {
       showLoginError("Invalid email or password.");
       submitBtn.disabled = false;
@@ -527,7 +527,7 @@
       localStorage.setItem("ppoUserName", displayName);
 
       const role = result?.role || result;
-      window.location.href = role === "admin" ? "dashboardMenu.html" : "ProfileUser.html";
+      window.location.href = role === "admin" ? "dashboardmenu.html" : "profileuser.html";
     } catch {
       showLoginError("Google sign-in failed.");
     }

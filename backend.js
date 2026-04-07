@@ -51,11 +51,11 @@ const db = getFirestore(app);
 export function checkAuth() {
   onAuthStateChanged(auth, async user => {
     const page = window.location.pathname;
-    const publicPages = ["signIn.html", "signUp.html", "landingpage.html"];
+    const publicPages = ["signIn.html", "signUp.html", "index.html"];
     const isPublic = publicPages.some(p => page.includes(p));
 
     if (!user) {
-      if (!isPublic) window.location.replace("signIn.html");
+      if (!isPublic) window.location.replace("signin.html");
       return;
     }
 
@@ -75,7 +75,7 @@ export function checkAuth() {
 
       const userData = userSnap.data();
       if (page.includes("dashboard") && userData.role !== "admin") {
-        window.location.replace("signIn.html");
+        window.location.replace("signin.html");
       }
 
     } catch (err) {
@@ -99,7 +99,7 @@ export async function handleLogin(email, password) {
     localStorage.setItem("ppoUserName", data.fullname || email);
   }
 
-  window.location.replace("dashboardMenu.html");
+  window.location.replace("dashboardmenu.html");
   return result.user;
 }
 
@@ -144,7 +144,7 @@ export async function handleGoogleLogin() {
 ================================ */
 export async function handleLogout() {
   await signOut(auth);
-  window.location.replace("signIn.html");
+  window.location.replace("signin.html");
 }
 
 /* ===============================
