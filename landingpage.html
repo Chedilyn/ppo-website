@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Provincial Population Office | Misamis Oriental</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --dark-green: #1a4d2e;
+            --accent-green: #2ecc71;
+            --soft-white: #f8fafc;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--dark-green); 
+            color: #ffffff;
+            line-height: 1.6;
+        }
+
+        /* ===== OFFICIAL GOV HEADER ===== */
+        header {
+            background: #ffffff;
+            padding: 15px 5%;
+            border-bottom: 1px solid #e2e8f0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-left: -95px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-left: 40px; /* moves the logos to the right */
+        }
+
+        .header-left img {
+            height: 85px;
+            width: auto;
+            object-fit: contain;
+            transition: transform 0.3s ease;
+        }
+
+        .header-left img:hover {
+            transform: scale(1.08);
+        }
+
+        .header-center {
+            text-align: center;
+            flex: 1;
+            padding: 0 20px;
+            margin-left: -100px;
+        }
+
+        .republic-text {
+            display: block;
+            font-size: 15px;
+            color: #666;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            margin-bottom: -2px;
+        }
+
+        .provincial-title {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 28px;
+            font-weight: 800;
+            color: #1a1a1a;
+            letter-spacing: -0.5px;
+            line-height: 1.2;
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+        }
+
+        nav a {
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 700;
+            color: #444;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            padding: 10px 0;
+            transition: var(--transition);
+        }
+
+        nav a.active, nav a:hover {
+            color: var(--dark-green);
+        }
+
+        nav a.active::after, nav a:hover::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--accent-green);
+            border-radius: 2px;
+        }
+
+        /* LOGIN DROPDOWN */
+        .login-dropdown {
+            position: relative;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: #ffffff;
+            min-width: 200px;
+            border-radius: 8px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+            display: block;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: var(--transition);
+            overflow: hidden;
+            border: 1px solid #eee;
+            margin-top: 10px;
+        }
+
+        .login-dropdown:hover .dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-menu a {
+            display: block;
+            padding: 15px 20px;
+            margin: 0;
+            color: var(--dark-green);
+            border-bottom: 1px solid #f0f0f0;
+            text-transform: none;
+        }
+
+        /* ===== HERO SECTION ===== */
+        .hero {
+            padding: 120px 5%;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            background: 
+                linear-gradient(rgba(26, 77, 46, 0.85), rgba(26, 77, 46, 0.95)),
+                url('backPic.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            text-align: center;
+            align-items: center;
+        }
+
+        .hero h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 4.5rem;
+            font-weight: 900;
+            line-height: 1.2;
+            margin-bottom: 25px;
+            color: var(--accent-green);
+            text-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            animation: fadeInUp 0.8s ease;
+            white-space: nowrap;
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            max-width: 850px;
+            line-height: 1.8;
+            margin-bottom: 45px;
+            color: rgba(255,255,255,0.9);
+            animation: fadeInUp 1s ease;
+        }
+
+        .btn {
+            padding: 16px 40px;
+            font-weight: 800;
+            text-decoration: none;
+            text-transform: uppercase;
+            display: inline-block;
+            transition: var(--transition);
+            border-radius: 4px;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: var(--accent-green);
+            color: #ffffff;
+            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
+        }
+
+        .btn-outline {
+            border: 2px solid #ffffff;
+            color: #ffffff;
+            margin-left: 20px;
+        }
+
+        /* ===== SERVICES ===== */
+        .services {
+            background: var(--soft-white);
+            color: var(--dark-green);
+            padding: 100px 10%;
+        }
+
+        .services h2 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2.8rem;
+            margin-bottom: 60px;
+            text-align: center;
+            text-transform: uppercase;
+            position: relative;
+        }
+
+        .service-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .service-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            padding: 50px 40px;
+            transition: var(--transition);
+            border-radius: 12px;
+        }
+
+        /* ===== VISION/MISSION ===== */
+        .vm-section {
+            padding: 0;
+            display: flex;
+            background: #123520;
+        }
+
+        .vm-box {
+            flex: 1;
+            padding: 80px 10%;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .vm-box h2 {
+            font-family: 'Montserrat', sans-serif;
+            color: var(--accent-green);
+            margin-bottom: 30px;
+            font-size: 2.4rem;
+            font-weight: 900;
+        }
+
+        .vm-box p {
+            font-size: 1.15rem;
+            line-height: 2;
+            color: rgba(255,255,255,0.85);
+        }
+
+        /* ===== FOOTER ===== */
+        footer {
+            padding: 50px 10%;
+            background: #0d2617;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="header-left">
+        <img src="logo4.png" alt="Bagong Pilipinas">
+        <img src="logo2.png" alt="Province of Misamis Oriental">
+        <img src="logo3.png" alt="PPO">
+    </div>
+
+    <div class="header-center">
+        <span class="republic-text">Republic of the Philippines</span>
+        <h1 class="provincial-title">Provincial Government of Misamis Oriental</h1>
+    </div>
+
+    <nav>
+        <a href="#" class="active">Home</a>
+        <a href="https://www.misamisoriental.gov.ph/" target="_blank">About</a>
+        <div class="login-dropdown">
+            <a href="#">Login <i class="fa-solid fa-chevron-down" style="font-size: 10px; margin-left: 5px;"></i></a>
+            <div class="dropdown-menu">
+                <a href="signIn.html"><i class="fa-solid fa-user" style="margin-right: 10px;"></i> User</a>
+                <a href="adminLogin.html"><i class="fa-solid fa-user-shield" style="margin-right: 10px;"></i> Administrator</a>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<section class="hero">
+    <h1>Provincial Population Office</h1>
+    <p>
+       Enabling Institutions Toward People-Centered Development in the Province
+    </p>
+    <div>
+        <a href="signIn.html" class="btn btn-primary">Get Started</a>
+        <a href="https://share.google/x89mjw4cibJp10lLT" class="btn btn-outline" target="_blank">Learn More</a>
+    </div>
+    </div>
+</section>
+
+<section class="services">
+    <h2>Our Core Services</h2>
+    <div class="service-grid">
+        <div class="service-card">
+            <i class="fa-solid fa-chart-line" style="font-size: 2rem; margin-bottom: 20px; color: var(--accent-green);"></i>
+            <h3>Population Data and Information Services</h3>
+            <p>Provides population statistics, research, and demographic information to support planning and decision-making in communities.</p>
+        </div>
+        <div class="service-card">
+            <i class="fa-solid fa-people-group" style="font-size: 2rem; margin-bottom: 20px; color: var(--accent-green);"></i>
+            <h3>Family Planning Services</h3>
+            <p>Provides information and counseling on responsible parenthood and family planning methods to help families make informed reproductive health decisions.</p>
+        </div>
+        <div class="service-card">
+            <i class="fa-solid fa-bullhorn" style="font-size: 2rem; margin-bottom: 20px; color: var(--accent-green);"></i>
+            <h3>Adolescent Health and Development Program</h3>
+            <p>Educates young people about reproductive health, life skills, and responsible behavior to prevent early pregnancy and promote youth development.</p>
+        </div>
+    </div>
+</section>
+
+<section class="vm-section">
+    <div class="vm-box">
+        <h2>VISION</h2>
+        <p>
+            The Provincial Population Office (PPO) is the lead office in the province in advancing the population and development policies and programs towards increased share and opportunity of each Filipino in socio-economic progress; for a healthy, resilient and empowered people, secure with a sustainable economy and ecologically balanced environment, anchored on accountable and transparent governance.
+        </p>
+    </div>
+
+    <div class="vm-box" style="background: rgba(255,255,255,0.03);">
+        <h2>MISSION</h2>
+        <p>
+            To strengthen institutional capacities to responsibly serve the people of Misamis Oriental by implementing our mandates, collaborating with stakeholders to implement integrated population and development strategies, policies, and programs based on demographic and socio-economic data, information and knowledge, in support of the Honorable Governor Juliette T. Uy BANGON MIS. OR. Platform of Governance under:
+            <br><br>
+            B - Barangay Empowerment and Strengthening<br>
+            N - Noble Health and Social Services Delivery<br>
+            N - Notable Programs for Youth Development
+        </p>
+    </div>
+</section>
+
+<footer>
+    <p>&copy; 2026 Provincial Government of Misamis Oriental. All rights reserved.</p>
+    <p><i class="fa-brands fa-facebook"></i> <a href="https://www.facebook.com/ppomisor/" target="_blank">facebook.com/ppomisor</a></p>
+</footer>
+
+</body>
+</html>

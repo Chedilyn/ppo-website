@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile | PPO</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --primary-green: #1a4d2e;
+            --accent-green: #2ecc71;
+            --glass-bg: rgba(255, 255, 255, 0.08);
+            --card-white: rgba(255, 255, 255, 0.98);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --danger-red: #ef4444;
+        }
+
+        /* Added Notification Style */
+/* Notification */
+#notificationTray { position: fixed; top: 90px; right: 20px; z-index: 3000; display: flex; flex-direction: column; gap: 10px; }
+.toast { background: var(--primary-green); color: white; padding: 15px 25px; border-radius: 12px; box-shadow: 0 10px 20px rgba(0,0,0,0.2); font-weight: 600; display: flex; align-items: center; gap: 10px; animation: slideIn 0.3s ease; }
+@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
+::-webkit-scrollbar-thumb { background: var(--accent-green); border-radius: 10px; }
+
+body { 
+    margin: 0; 
+    font-family: 'Outfit', sans-serif; 
+    background: radial-gradient(circle at top right, #1a4d2e, #071a0f); 
+    color: white; 
+    display: flex; 
+    flex-direction: column; 
+    height: 100vh; 
+    overflow: hidden;
+}
+
+/* HEADER */
+.header {
+    background: #ffffff;
+    padding: 15px 5%;
+    border-bottom: 3px solid var(--accent-green);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+
+/* 3 DOT MENU */
+.action-menu {
+    position: relative;
+}
+
+.menu-trigger {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: 0.2s;
+
+    /* FIXES */
+    color: #1e293b;   /* force visible icon color */
+    font-size: 18px;  /* ensure size */
+}
+.menu-trigger:hover {
+    background: #e2e8f0; /* light gray */
+    color: #1e293b;       /* dark text */
+}
+
+.menu-dropdown {
+    position: absolute;
+    top: 45px;
+    right: 0;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    overflow: hidden;
+    display: none;
+    min-width: 140px;
+    z-index: 50;
+}
+
+.menu-dropdown.show {
+    display: block;
+}
+
+.menu-item {
+    padding: 10px 15px;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #1e293b;
+    transition: 0.2s;
+}
+
+.menu-item:hover {
+    background: #f1f5f9;
+}
+
+.menu-item.delete {
+    color: #ef4444;
+}
+
+.header-left { display: flex; align-items: center; gap: 15px; margin-left: -20px; }
+.header-left img { height: 75px; width: auto; object-fit: contain; }
+.header-center { text-align: center; flex: 1; padding: 0 20px; margin-right: -170px; }
+.header h1 { font-family: 'Montserrat', sans-serif; font-size: 26px; font-weight: 800; color: var(--primary-green); letter-spacing: -0.5px; line-height: 1.2; text-transform: uppercase; margin: 0; }
+.header-right { display: flex; align-items: center; gap: 12px; }
+
+/* NAV BUTTONS */
+.nav-btn { padding: 10px 18px; border-radius: 12px; font-weight: 700; text-decoration: none; font-size: 13px; text-transform: uppercase; display: flex; align-items: center; gap: 8px; transition: var(--transition); margin-left: 20px; }
+.btn-upload { background: var(--primary-green); color: white; border: 1px solid var(--primary-green); }
+.btn-upload:hover { background: var(--accent-green); border-color: var(--accent-green); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3); }
+.logout-btn { color: #ef4444; background: #fee2e2; }
+.logout-btn:hover { background: #ef4444; color: white; transform: translateY(-2px); }
+
+/* MAIN WRAPPER */
+.main-wrapper { display: flex; flex: 1; padding: 40px; gap: 40px; overflow: hidden; }
+.profile-card { width: 320px; background: var(--glass-bg); border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border-radius: 35px; display: flex; flex-direction: column; align-items: center; padding: 50px 25px; box-shadow: 0 25px 50px rgba(0,0,0,0.2); }
+.avatar-halo { width: 130px; height: 130px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-green), transparent); padding: 4px; margin-bottom: 20px; }
+.avatar-inner { width: 100%; height: 100%; background: #0d2c1a; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 50px; color: var(--accent-green); }
+.user-name { font-size: 24px; font-weight: 800; margin-bottom: 8px; color: white; text-align: center; }
+.user-dept { font-size: 13px; color: #a3b1aa; text-transform: uppercase; letter-spacing: 1.5px; }
+
+.stats-box { margin-top: 40px; width: 100%; background: rgba(255,255,255,0.05); border-radius: 20px; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+.stat-item { display: flex; justify-content: space-between; font-size: 14px; }
+.stat-label { color: #889990; }
+.stat-value { font-weight: 700; color: var(--accent-green); }
+
+.content-area { flex: 1; display: flex; flex-direction: column; gap: 20px; overflow-y: auto; padding-right: 10px; }
+.section-title h2 { font-size: 32px; font-weight: 800; margin: 0; }
+
+.activity-card { background: var(--card-white); border-radius: 24px; padding: 20px 30px; display: grid; grid-template-columns: 50px 140px 1fr 120px; align-items: center; transition: 0.3s ease; border: 2px solid transparent; margin-bottom: 15px; }
+.activity-card:hover { transform: translateY(-3px); border-color: var(--accent-green); box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+.card-date { color: #64748b; font-weight: 600; font-size: 13px; border-right: 1px solid #e2e8f0; }
+.card-info { display: flex; align-items: center; gap: 20px; padding-left: 20px; overflow: hidden; }
+.card-info i { font-size: 22px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; border-radius: 12px; flex-shrink: 0; }
+.fa-file-pdf { color: #ef4444; background: #fee2e2; }
+.fa-file-excel { color: #1d6f42; background: #e7f3ec; }
+.card-info span { color: #1e293b; font-weight: 700; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.status-pill { font-size: 10px; padding: 3px 10px; border-radius: 20px; font-weight: 800; text-transform: uppercase; margin-top: 5px; display: inline-block; }
+.status-approved { background: #dcfce7; color: #166534; }
+.status-pending { background: #fef3c7; color: #92400e; }
+.status-rejected { background: #fee2e2; color: #991b1b; }
+
+/* SELECTION TOOLBAR */
+.selection-toolbar { background: var(--card-white); padding: 15px 30px; border-radius: 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; border: 2px solid var(--accent-green); animation: slideDown 0.3s ease; }
+@keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+.toolbar-left { display: flex; align-items: center; gap: 15px; color: #1e293b; font-weight: 700; }
+.toolbar-right { display: flex; gap: 10px; }
+.file-check { width: 20px; height: 20px; cursor: pointer; accent-color: var(--accent-green); }
+
+/* BUTTON ACTIONS */
+.card-actions { display: flex; gap: 8px; justify-content: center; align-items: center; }
+.view-btn { width: 40px; height: 40px; border-radius: 12px; background: #f1f5f9; color: #1e293b; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: 0.3s; }
+.view-btn:hover { background: var(--primary-green); color: white; }
+.del-btn { width: 40px; height: 40px; border-radius: 12px; background: #fee2e2; color: #ef4444; display: flex; align-items: center; justify-content: center; border: none; cursor: pointer; transition: 0.3s; }
+.del-btn:hover { background: #ef4444; color: white; }
+
+/* MODAL */
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(8px); display: none; justify-content: center; align-items: center; z-index: 2000; }
+.modal-content { background: var(--card-white); color: #1e293b; padding: 35px; border-radius: 28px; width: 90%; max-width: 400px; text-align: center; transform: scale(0.8); transition: 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
+.modal-overlay.active { display: flex; }
+.modal-overlay.active .modal-content { transform: scale(1); }
+.modal-icon { font-size: 50px; margin-bottom: 20px; display: inline-block; padding: 20px; border-radius: 50%; }
+.icon-warning { color: #f59e0b; background: #fef3c7; }
+.icon-success { color: #2ecc71; background: #e7f3ec; }
+.icon-deleting { color: #3b82f6; background: #dbeafe; animation: pulse 1.5s infinite; }
+@keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+.modal-buttons { display: flex; gap: 12px; margin-top: 30px; justify-content: center; }
+.m-btn { padding: 12px 24px; border-radius: 12px; font-weight: 700; border: none; cursor: pointer; transition: 0.2s; font-family: 'Outfit'; }
+.btn-confirm { background: var(--danger-red); color: white; }
+.btn-cancel { background: #e2e8f0; color: #64748b; }
+.btn-confirm:hover { background: #dc2626; }
+.btn-cancel:hover { background: #cbd5e1; }
+
+.loader { border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid var(--accent-green); border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 20px auto; }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+@media (max-width: 992px) {
+    .header { flex-direction: column; gap: 15px; height: auto; padding: 20px; }
+    .header-center { margin-left: 0; }
+    .main-wrapper { flex-direction: column; padding: 20px; overflow-y: auto; }
+    .profile-card { width: 100%; }
+    .activity-card { grid-template-columns: 50px 1fr; gap: 15px; text-align: center; }
+    .card-date { border-right: none; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; }
+    .card-info { padding-left: 0; justify-content: center; }
+    .card-actions { justify-content: center; }
+}
+    </style>
+</head>
+<body>
+
+<div id="notificationTray"></div>
+
+<div id="customModal" class="modal-overlay">
+    <div class="modal-content">
+        <div id="modalIcon" class="modal-icon"><i class="fa-solid fa-circle-exclamation"></i></div>
+        <h3 id="modalTitle" style="margin: 0 0 10px 0; font-size: 22px;">Delete File?</h3>
+        <p id="modalMsg">Are you sure you want to remove this file from your profile?</p>
+        <div id="modalBtnArea" class="modal-buttons">
+            <button class="m-btn btn-cancel" onclick="closeModal()">Cancel</button>
+            <button id="confirmBtn" class="m-btn btn-confirm">Delete</button>
+        </div>
+    </div>
+</div>
+
+<header class="header">
+    <div class="header-left">
+        <img src="logo4.png" alt="Bagong Pilipinas">
+        <img src="logo2.png" alt="Province of Misamis Oriental">
+        <img src="logo3.png" alt="PPO">
+    </div>
+    <div class="header-center">
+        <h1>Provincial Population Office</h1>
+    </div>
+    <div class="header-right">
+        <a href="uploadPage.html" class="nav-btn btn-upload"><i class="fa-solid fa-cloud-arrow-up"></i> Upload File</a>
+        <a href="landingpage.html" class="nav-btn logout-btn"><i class="fa-solid fa-power-off"></i> Log Out</a>
+    </div>
+</header>
+
+<div class="main-wrapper">
+<aside class="profile-card">
+    <div class="avatar-halo"><div class="avatar-inner"><i class="fa-solid fa-user-shield"></i></div></div>
+    <h1 class="user-name" id="userName">Loading...</h1>
+    <p class="user-dept">Personal Record</p>
+
+    <div class="stats-box">
+        <div class="stat-item">
+            <span class="stat-label">My Documents</span>
+            <span class="stat-value" id="countVal">0</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-label">Access Mode</span>
+            <span class="stat-value">Private</span>
+        </div>
+    </div>
+</aside>
+
+<main class="content-area">
+    <div class="section-title">
+        <h2>Personal File History</h2>
+        <p style="color: #a3b1aa; margin-top: -5px;">Showing only your submissions</p>
+    </div>
+
+    <div id="selectionToolbar" class="selection-toolbar" style="display: none;">
+        <div class="toolbar-left">
+            <input type="checkbox" id="selectAllCheck" class="file-check" onclick="toggleSelectAll(this)">
+            <span id="selectedCount">0 items selected</span>
+        </div>
+        <div class="toolbar-right">
+            <button class="m-btn btn-cancel" style="padding: 8px 15px;" onclick="cancelSelection()">Cancel</button>
+            <button class="m-btn btn-confirm" style="padding: 8px 15px;" onclick="deleteSelectedFiles()">Delete All Selected</button>
+        </div>
+    </div>
+
+    <div id="recentFilesContainer"><div class="loader"></div></div>
+</main>
+</div>
+
+<script>
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzukBdhRzbWPWLMH1hrmL7iZIL6x37aI2h6jEDAiaLp0sat212xHbmj1THFni6VpeHJ/exec";
+
+// --- Notifications ---
+function showNotification(message, type = 'success') {
+    const tray = document.getElementById('notificationTray');
+    const note = document.createElement('div');
+    note.className = 'toast';
+
+    let iconHTML = '';
+    let bgColor = '';
+
+    switch(type) {
+        case 'success':
+            iconHTML = '<i class="fa-solid fa-check"></i>';
+            bgColor = 'var(--accent-green)';
+            break;
+        case 'error':
+            iconHTML = '<i class="fa-solid fa-circle-xmark"></i>';
+            bgColor = 'var(--danger-red)';
+            break;
+        default:
+            iconHTML = '<i class="fa-solid fa-circle-info"></i>';
+            bgColor = 'var(--primary-green)';
+    }
+
+    note.innerHTML = `${iconHTML} ${message}`;
+    note.style.background = bgColor;
+    tray.appendChild(note);
+
+    setTimeout(() => note.remove(), 3000);
+    return note;
+}
+
+// --- LOCAL STORAGE FOR HIDDEN FILES ---
+function markFileHidden(fileId) {
+    const hidden = JSON.parse(localStorage.getItem('hiddenFiles') || '[]');
+    if (!hidden.includes(fileId)) hidden.push(fileId);
+    localStorage.setItem('hiddenFiles', JSON.stringify(hidden));
+}
+
+// --- DELETE SINGLE FILE FRONT-END ONLY ---
+function deleteMyFile(fileId, fileName) {
+    showConfirmModal(`"${fileName}"`, () => {
+        closeModal();
+        markFileHidden(fileId);
+
+        const checkbox = document.querySelector(`.row-check[value="${fileId}"]`);
+        if (checkbox) {
+            const card = checkbox.closest('.activity-card');
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(10px)';
+            setTimeout(() => {
+                card.remove();
+                const countVal = document.getElementById("countVal");
+                const currentCount = parseInt(countVal.textContent);
+                countVal.textContent = Math.max(0, currentCount - 1);
+
+                if (document.querySelectorAll('.activity-card').length === 0) {
+                    document.getElementById("recentFilesContainer").innerHTML = `
+                        <div style="text-align:center; padding:50px; opacity:0.5;">
+                            <i class="fa-solid fa-folder-open" style="font-size:40px;"></i><br>
+                            No files found
+                        </div>`;
+                }
+            }, 300);
+        }
+
+        showSuccessModal(`"${fileName}" deleted successfully.`);
+    });
+}
+
+// --- CONFIRM MODAL ---
+function showConfirmModal(fileName, onConfirm) {
+    const modal = document.getElementById("customModal");
+    const title = document.getElementById("modalTitle");
+    const msg = document.getElementById("modalMsg");
+    const confirmBtn = document.getElementById("confirmBtn");
+    const icon = document.getElementById("modalIcon");
+    const btnArea = document.getElementById("modalBtnArea");
+
+    title.textContent = "Remove from Profile?";
+    msg.textContent = `This will hide ${fileName} from your history. The official copy will remain in the PPO database for Admins.`;
+
+    icon.innerHTML = `<i class="fa-solid fa-eye-slash"></i>`;
+    icon.className = "modal-icon icon-warning";
+
+    // ✅ Restore buttons properly (IMPORTANT)
+    btnArea.innerHTML = `
+        <button class="m-btn btn-cancel" onclick="closeModal()">Cancel</button>
+        <button id="confirmBtn" class="m-btn btn-confirm">Remove</button>
+    `;
+
+    modal.classList.add("active");
+
+    // ✅ Re-bind click event safely
+    document.getElementById("confirmBtn").onclick = async () => {
+        closeModal();
+        await onConfirm();
+    };
+}
+
+function closeModal() {
+    document.getElementById("customModal").classList.remove("active");
+}
+
+function showSuccessModal(message) {
+    const modal = document.getElementById("customModal");
+    const title = document.getElementById("modalTitle");
+    const msg = document.getElementById("modalMsg");
+    const btnArea = document.getElementById("modalBtnArea");
+    const icon = document.getElementById("modalIcon");
+
+    title.textContent = "Success";
+    msg.textContent = message;
+
+    icon.innerHTML = `<i class="fa-solid fa-circle-check"></i>`;
+    icon.className = "modal-icon icon-success";
+
+    // Only OK button
+    btnArea.innerHTML = `
+        <button class="m-btn btn-confirm" onclick="closeModal()">OK</button>
+    `;
+
+    modal.classList.add("active");
+
+    // Auto close after 2 seconds
+    setTimeout(() => {
+        closeModal();
+    }, 2000);
+}
+
+// --- SELECTION TOOLBAR ---
+function updateSelectionUI() {
+    const checked = document.querySelectorAll('.row-check:checked');
+    const toolbar = document.getElementById('selectionToolbar');
+    const countLabel = document.getElementById('selectedCount');
+    
+    if (checked.length > 0) {
+        toolbar.style.display = 'flex';
+        countLabel.innerText = `${checked.length} item(s) selected`;
+    } else {
+        toolbar.style.display = 'none';
+        document.getElementById('selectAllCheck').checked = false;
+    }
+}
+
+function toggleSelectAll(master) {
+    const checks = document.querySelectorAll('.row-check');
+    checks.forEach(c => c.checked = master.checked);
+    updateSelectionUI();
+}
+
+function cancelSelection() {
+    const checks = document.querySelectorAll('.row-check');
+    checks.forEach(c => c.checked = false);
+    document.getElementById('selectAllCheck').checked = false;
+    updateSelectionUI();
+}
+
+// --- DELETE SELECTED FILES FRONT-END ONLY ---
+function deleteSelectedFiles() {
+    const checked = document.querySelectorAll('.row-check:checked');
+    const ids = Array.from(checked).map(c => c.value);
+
+    if (ids.length === 0) return;
+
+    showConfirmModal(`${ids.length} files`, () => {
+        ids.forEach(id => markFileHidden(id));
+        checked.forEach(c => c.closest('.activity-card').remove());
+
+        const countVal = document.getElementById("countVal");
+        const currentCount = parseInt(countVal.textContent);
+        countVal.textContent = Math.max(0, currentCount - ids.length);
+
+        if (document.querySelectorAll('.activity-card').length === 0) {
+            document.getElementById("recentFilesContainer").innerHTML = `
+                <div style="text-align:center; padding:50px; opacity:0.5;">
+                    <i class="fa-solid fa-folder-open" style="font-size:40px;"></i><br>
+                    No files found
+                </div>`;
+        }
+
+        // ✅ ADD THESE TWO LINES
+        cancelSelection();
+        updateSelectionUI();
+
+        showSuccessModal(`${ids.length} file(s) deleted successfully.`);
+    });
+}
+
+function toggleMenu(trigger) {
+    const dropdown = trigger.nextElementSibling;
+
+    // Close all other menus
+    document.querySelectorAll('.menu-dropdown').forEach(menu => {
+        if (menu !== dropdown) menu.classList.remove('show');
+    });
+
+    dropdown.classList.toggle('show');
+}
+
+// Close menu when clicking outside
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.action-menu')) {
+        document.querySelectorAll('.menu-dropdown').forEach(menu => {
+            menu.classList.remove('show');
+        });
+    }
+});
+
+// --- LOAD FILES ---
+document.addEventListener("DOMContentLoaded", async () => {
+    const container = document.getElementById("recentFilesContainer");
+    
+    // 1. Get current user info from storage
+    const storedUser = (localStorage.getItem("ppoUserName") || "").trim().toLowerCase();
+    
+    if (!storedUser) {
+        window.location.href = "landingpage.html";
+        return;
+    }
+
+    // Set UI Name
+    const displayName = storedUser.includes("@") ? storedUser.split("@")[0] : storedUser;
+    document.getElementById("userName").textContent = displayName.replace(/[._]/g, ' ').toUpperCase();
+
+try {
+        const res = await fetch(SCRIPT_URL, {
+            method: "POST",
+            body: JSON.stringify({ action: "getRecentFiles", recursive: true })
+        });
+
+        const data = await res.json();
+        
+        // 1. Clear the loader/container immediately before processing
+        container.innerHTML = ""; 
+
+        if (!data.success || !data.files) {
+            container.innerHTML = `<div style="color:red; text-align:center;">Data Load Error</div>`;
+            return;
+        }
+
+        const hiddenFiles = JSON.parse(localStorage.getItem('hiddenFiles') || '[]');
+        const seenIds = new Set(); // To prevent duplicate file IDs from appearing
+
+        // 2. FILTERING & DEDUPLICATION
+        const myFiles = data.files.filter(f => {
+            // Basic validation
+            if (!f.fullname || !f.id) return false;
+            
+            // Skip if user hid it
+            if (hiddenFiles.includes(f.id)) return false;
+            
+            // Deduplication: Skip if we already processed this ID
+            if (seenIds.has(f.id)) return false;
+
+            const fileOwner = f.fullname.toLowerCase().trim();
+            
+            // Check identity
+            const matchesUser = fileOwner === storedUser || 
+                                fileOwner.includes(storedUser) || 
+                                storedUser.includes(fileOwner);
+
+            if (matchesUser) {
+                seenIds.add(f.id); // Mark this ID as handled
+                return true;
+            }
+            return false;
+        });
+
+        // 3. Update Document Count
+        document.getElementById("countVal").textContent = myFiles.length;
+
+        if (myFiles.length === 0) {
+            container.innerHTML = `
+                <div style="text-align:center; padding:50px; opacity:0.5;">
+                    <i class="fa-solid fa-folder-open" style="font-size:40px;"></i><br>
+                    <p>No files found for: <b>${storedUser}</b></p>
+                </div>`;
+            return;
+        }
+
+        // 4. SORT BY DATE
+        myFiles.sort((a, b) => new Date(b.rawDate) - new Date(a.rawDate));
+
+        // 5. GENERATE HTML & INJECT
+        const cardsHtml = myFiles.map(f => {
+            const dateObj = new Date(f.rawDate);
+            const dateStr = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            const timeStr = dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+            const iconClass = f.name.toLowerCase().includes('xls') ? 'fa-solid fa-file-excel' : 'fa-solid fa-file-pdf';
+            
+            const statusRaw = (f.status || 'PENDING').toUpperCase();
+            let statusClass = 'status-pending';
+            if(statusRaw === 'APPROVED') statusClass = 'status-approved';
+            if(statusRaw === 'REJECTED') statusClass = 'status-rejected';
+
+            // Ensure Admin Notes are captured properly
+            const userMsg = (f.comment && f.comment.trim() !== "") ? f.comment : "No Remarks Provided.";
+            const adminMsg = (f.notification || f.adminNotes || "").trim() !== "" 
+                             ? (f.notification || f.adminNotes) 
+                             : "No Remarks from PPO yet";
+
+            return `
+                <div class="activity-card" style="display: block; height: auto; padding: 20px; border: 1px solid rgba(0,0,0,0.05);">
+                    <div style="display: grid; grid-template-columns: 40px 100px 1fr 100px; align-items: center; width: 100%;">
+                        <div style="text-align:center;">
+                            <input type="checkbox" class="file-check row-check" value="${f.id}" onclick="updateSelectionUI()">
+                        </div>
+                        <div class="card-date" style="border-right: 1px solid #e2e8f0;">
+                            <div style="font-size: 14px; font-weight: 600; color: #1e293b;">${dateStr}</div>
+                            <div style="font-size: 11px; color:#94a3b8">${timeStr}</div>
+                        </div>
+                        <div class="card-info" style="padding-left: 20px;">
+                            <i class="${iconClass}"></i>
+                            <div style="display:flex; flex-direction:column; overflow:hidden;">
+                                <span style="color: #1e293b; font-weight: 700;">${f.name}</span>
+                                <div><span class="status-pill ${statusClass}">${statusRaw}</span></div>
+                            </div>
+                        </div>
+                        <div class="card-actions">
+                            <div class="action-menu">
+                                <div class="menu-trigger" onclick="toggleMenu(this)">
+                                    <i class="fa-solid fa-ellipsis-vertical"></i>
+                                </div>
+
+                                <div class="menu-dropdown">
+                                    <div class="menu-item" onclick="window.open('${f.url}', '_blank')">
+                                        <i class="fa-solid fa-eye"></i> View
+                                    </div>
+                                    <div class="menu-item delete" onclick="deleteMyFile('${f.id}', '${f.name.replace(/'/g, "\\'")}')">
+                                        <i class="fa-solid fa-trash-can"></i> Delete
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 15px; margin-left: 40px; background: #f8fafc; border-radius: 12px; padding: 15px; border: 1px solid #e2e8f0;">
+                        <div style="margin-bottom: 10px;">
+                            <small style="color: #64748b; font-weight: 800; text-transform: uppercase; font-size: 9px; letter-spacing: 0.5px;">MPO Remarks</small>
+                            <p style="margin: 2px 0; color: #475569; font-size: 13px; font-style: italic;">"${userMsg}"</p>
+                        </div>
+                        <div style="border-top: 1px dashed #cbd5e1; padding-top: 10px;">
+                            <small style="color: var(--primary-green); font-weight: 800; text-transform: uppercase; font-size: 9px; letter-spacing: 0.5px;">PPO Remarks:</small>
+                            <p style="margin: 2px 0; color: #1e293b; font-size: 13px; font-weight: 600;">${adminMsg}</p>
+                        </div>
+                    </div>
+                </div>`;
+        }).join("");
+
+        // Final injection - strictly replaces whatever was there
+        container.innerHTML = cardsHtml;
+
+    } catch (err) {
+        container.innerHTML = `<div style="text-align:center; padding:20px;">Connection failed.</div>`;
+    }
+});
+</script>
+</body>
+</html>

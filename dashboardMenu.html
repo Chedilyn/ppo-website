@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PPO | Executive Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        :root {
+            --primary-green: #1a4d2e;
+            --accent-green: #2ecc71;
+            --glass-white: rgba(255, 255, 255, 0.92);
+            --text-dark: #0f172a;
+            --text-slate: #64748b;
+            --danger: #be123c;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+
+        body {
+            background-image: linear-gradient(rgba(26, 77, 46, 0.9), rgba(13, 44, 26, 0.85)), url("mainback.png");
+            background-attachment: fixed; 
+            background-size: cover; 
+            min-height: 100vh;
+            color: white;
+        }
+
+        /* ===== OFFICIAL HEADER ===== */
+        .header {
+            background: #ffffff;
+            padding: 15px 5%;
+            border-bottom: 3px solid var(--accent-green);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left { display: flex; align-items: center; gap: 15px; margin-left: -65px;}
+        .header-left img { height: 75px; width: auto; object-fit: contain; transition: var(--transition); }
+        .header-center { text-align: center; flex: 1; padding: 0 20px; margin-left: -75px; }
+
+        .header h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--primary-green);
+            letter-spacing: -0.5px;
+            line-height: 1.2;
+            text-transform: uppercase;
+            margin: 0;
+        }
+
+        .header-clock {
+            color: var(--text-slate);
+            font-size: 12px;
+            font-weight: 700;
+            margin-top: 5px;
+            display: block;
+        }
+
+        .profile-pill { 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            background: #e4efe8; 
+            padding: 10px 20px; 
+            border-radius: 999px; 
+            color: var(--primary-green);
+            font-weight: 700;
+            text-decoration: none;
+            font-size: 13px;
+            transition: var(--transition);
+        }
+
+        .profile-pill:hover { background: #d4e4d9; transform: translateY(-2px); }
+
+        /* ===== DASHBOARD LAYOUT ===== */
+        .container { max-width: 1300px; margin: 0 auto; padding: 40px 24px; }
+        .hero { text-align: center; margin-bottom: 50px; }
+        .hero h2 { font-family: 'Montserrat', sans-serif; font-size: 42px; font-weight: 900; letter-spacing: -1px; margin-bottom: 5px; }
+        .hero p { opacity: 0.8; font-size: 16px; text-transform: uppercase; letter-spacing: 2px; }
+
+        .action-bar { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 30px; 
+            padding: 0 10px;
+            gap: 20px;
+        }
+        
+        .action-buttons { display: flex; gap: 15px; align-items: center; }
+
+        .search-container {
+            position: relative;
+            flex: 1;
+            max-width: 450px;
+            margin: 0 30px;
+        }
+
+        .search-container i {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 16px;
+            pointer-events: none;
+            transition: var(--transition);
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 14px 20px 14px 50px;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            color: #ffffff;
+            font-size: 15px;
+            font-weight: 500;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .search-input:focus {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: var(--accent-green);
+            box-shadow: 0 0 15px rgba(46, 204, 113, 0.3);
+        }
+
+        .section-title { font-size: 20px; font-weight: 800; color: var(--accent-green); white-space: nowrap; }
+
+        .btn-create-large {
+            background: var(--accent-green); 
+            color: white; 
+            border: none;
+            padding: 14px 28px; 
+            border-radius: 14px; 
+            font-weight: 800;
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            gap: 10px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2); 
+            transition: var(--transition);
+            text-transform: uppercase;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .btn-create-large:hover { background: #ffffff; color: var(--primary-green); transform: translateY(-3px); }
+
+        /* ===== FOLDER CARDS & ACTIONS ===== */
+        .folder-grid {
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
+            gap: 25px;
+        }
+
+        .folder-card {
+            background: var(--glass-white); 
+            border-radius: 24px; 
+            padding: 30px;
+            display: flex; 
+            align-items: center; 
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            border: 2px solid transparent;
+        }
+
+        .folder-card:hover { transform: translateY(-8px); border-color: var(--accent-green); box-shadow: 0 15px 35px rgba(0,0,0,0.3); }
+
+        /* --- THREE DOTS MENU --- */
+        .folder-options {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            z-index: 20;
+        }
+
+        .dots-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-slate);
+            font-size: 18px;
+            padding: 8px;
+            cursor: pointer;
+            border-radius: 50%;
+            transition: var(--transition);
+        }
+
+        .dots-btn:hover { 
+            background: rgba(0, 0, 0, 0.05); 
+            color: var(--primary-green); 
+        }
+
+        /* Hidden by default */
+        .options-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            display: none; 
+            flex-direction: column;
+            min-width: 140px;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+            z-index: 100;
+        }
+
+        /* Logic to show the menu */
+        .options-menu.show { 
+            display: flex; 
+        }
+
+        .menu-item {
+            padding: 12px 16px;
+            font-size: 13px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+            color: var(--text-dark);
+            transition: background 0.2s;
+        }
+
+        .menu-item:hover { background: #f8fafc; color: var(--primary-green); }
+        .menu-item.delete { color: var(--danger); }
+        .menu-item.delete:hover { background: #fff1f2; }
+
+        .folder-icon {
+            width: 65px; height: 65px; border-radius: 20px;
+            background: #e4efe8; display: flex; align-items: center; justify-content: center;
+            font-size: 28px; color: var(--primary-green); margin-right: 20px;
+        }
+
+        .folder-info h3 { color: var(--text-dark); font-size: 19px; font-weight: 800; margin-bottom: 2px; }
+        .folder-info p { color: var(--text-slate); font-size: 13px; font-weight: 500; }
+
+        /* ===== UTILS ===== */
+        .processing-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.9);
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 5000; backdrop-filter: blur(10px);
+        }
+        .loader-ring {
+            width: 80px; height: 80px;
+            border: 5px solid rgba(46, 204, 113, 0.2);
+            border-top: 5px solid var(--accent-green);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 25px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            display: none; align-items: center; justify-content: center;
+            z-index: 3000;
+        }
+
+        .modal-box {
+            background: white; padding: 35px; border-radius: 24px;
+            max-width: 400px; width: 90%; text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            color: var(--text-dark);
+        }
+
+        .modal-input {
+            width: 100%; padding: 14px; border-radius: 12px;
+            border: 2px solid #e2e8f0; margin-bottom: 25px;
+            font-size: 16px; font-weight: 600; color: var(--text-dark);
+            outline: none; transition: var(--transition);
+        }
+
+        .modal-actions { display: flex; gap: 15px; }
+        .btn-modal { flex: 1; padding: 12px; border-radius: 12px; border: none; font-weight: 800; cursor: pointer; transition: var(--transition); }
+        .btn-cancel { background: #f1f5f9; color: var(--text-slate); }
+        .btn-confirm { background: var(--accent-green); color: white; }
+        .btn-confirm.danger { background: var(--danger); }
+
+        #toast {
+            position: fixed; bottom: 30px; right: 30px;
+            background: #0f172a; color: white; padding: 16px 28px;
+            border-radius: 12px; display: flex; align-items: center; gap: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            transform: translateY(100px); opacity: 0;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 4000; font-weight: 600;
+        }
+        #toast.show { transform: translateY(0); opacity: 1; }
+
+        @media (max-width: 992px) {
+            .header { flex-direction: column; height: auto; padding: 20px; gap: 15px; }
+            .header-center { margin-left: 0; }
+            .hero h2 { font-size: 32px; }
+            .action-bar { flex-direction: column; gap: 20px; }
+            .folder-grid { grid-template-columns: 1fr; }
+            .search-container { max-width: 100%; margin: 0; order: 3; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="processing-overlay" id="processOverlay">
+        <div class="loader-ring"></div>
+        <h2 id="processTitle" style="font-family: 'Montserrat'; font-weight: 900; letter-spacing: 1px;">CREATING FOLDER</h2>
+        <p style="color: var(--accent-green); margin-top: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 2px;">Syncing with Google Drive...</p>
+    </div>
+
+    <header class="header">
+        <div class="header-left">
+            <img src="logo4.png" alt="Bagong Pilipinas">
+            <img src="logo2.png" alt="Misamis Oriental">
+            <img src="logo3.png" alt="PPO">
+        </div>
+        <div class="header-center">
+            <h1>Provincial Population Office</h1>
+            <span id="headerTime" class="header-clock">Loading...</span>
+        </div>
+        <a href="profile.html" class="profile-pill">
+            <span>ADMINISTRATOR</span> <i class="fa-solid fa-user-shield"></i>
+        </a>
+    </header>
+
+    <main class="container">
+        <div class="hero"><h2>Executive Dashboard</h2><p>PPO Management System</p></div>
+        <div class="action-bar">
+            <h2 class="section-title">MAIN CATEGORIES</h2>
+            
+            <div class="search-container">
+                <input type="text" id="folderSearch" class="search-input" placeholder="Search categories...">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn-create-large" id="createBtn" onclick="triggerCreateFolder()">
+                    <i class="fa-solid fa-folder-plus"></i> NEW FOLDER
+                </button>
+            </div>
+        </div>
+        <div class="folder-grid" id="mainGrid">
+            <div class="loading-overlay" id="statusState">
+                <i class="fas fa-circle-notch fa-spin fa-3x"></i>
+                <p style="margin-top: 15px; font-weight: 600;">Syncing folders with Google Drive...</p>
+            </div>
+        </div>
+    </main>
+
+    <div class="modal-overlay" id="uiModal">
+        <div class="modal-box">
+            <i id="modalIcon" style="font-size: 50px; color: var(--accent-green); margin-bottom: 20px;" class="fa-solid fa-circle-question"></i>
+            <h3 id="modalTitle">Confirm Action</h3>
+            <p id="modalDesc">Are you sure you want to proceed?</p>
+            <input type="text" id="modalInput" class="modal-input" style="display: none;" placeholder="Enter name...">
+            <div class="modal-actions">
+                <button class="btn-modal btn-cancel" onclick="closeModal()">CANCEL</button>
+                <button class="btn-modal btn-confirm" id="modalConfirmBtn">CONFIRM</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast">
+        <i id="toastIcon" class="fa-solid fa-circle-check"></i>
+        <span id="toastMsg">Action completed</span>
+    </div>
+
+<script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzukBdhRzbWPWLMH1hrmL7iZIL6x37aI2h6jEDAiaLp0sat212xHbmj1THFni6VpeHJ/exec";
+    let allFoldersCache = [];
+
+    document.addEventListener("DOMContentLoaded", () => {
+        fetchFolders();
+        startClock();
+
+        // 🔥 FIX: Real-time search listener
+        document.getElementById("folderSearch").addEventListener("input", filterFolders);
+    });
+
+    function startClock() {
+        const update = () => {
+            const now = new Date();
+            document.getElementById('headerTime').textContent = now.toLocaleString('en-US', { 
+                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', 
+                hour: '2-digit', minute: '2-digit', second: '2-digit' 
+            });
+        };
+        update();
+        setInterval(update, 1000);
+    }
+
+    function showToast(message, isError = false) {
+        const toast = document.getElementById("toast");
+        const icon = document.getElementById("toastIcon");
+        document.getElementById("toastMsg").textContent = message;
+        toast.className = isError ? "show error" : "show";
+        icon.className = isError ? "fa-solid fa-circle-xmark" : "fa-solid fa-circle-check";
+        icon.style.color = isError ? "#be123c" : "#2ecc71";
+        setTimeout(() => toast.classList.remove("show"), 3000);
+    }
+
+    function closeModal() {
+        document.getElementById("uiModal").style.display = "none";
+        document.getElementById("modalInput").style.display = "none";
+        document.getElementById("modalInput").value = "";
+    }
+
+    function openModal({ title, desc, icon, isDanger, showInput, onConfirm }) {
+        const modal = document.getElementById("uiModal");
+        const modalIcon = document.getElementById("modalIcon");
+        const modalTitle = document.getElementById("modalTitle");
+        const modalDesc = document.getElementById("modalDesc");
+        const modalInput = document.getElementById("modalInput");
+        const confirmBtn = document.getElementById("modalConfirmBtn");
+
+        modalTitle.textContent = title;
+        modalDesc.innerHTML = desc;
+        modalIcon.className = `fa-solid ${icon}`;
+        if (isDanger) modalIcon.style.color = "var(--danger)";
+        else modalIcon.style.color = "var(--accent-green)";
+        
+        confirmBtn.className = isDanger ? "btn-modal btn-confirm danger" : "btn-modal btn-confirm";
+        modalInput.style.display = showInput ? "block" : "none";
+        modal.style.display = "flex";
+
+        confirmBtn.onclick = () => {
+            const value = showInput ? modalInput.value : true;
+            if (showInput && (!value || value.trim() === "")) return;
+            onConfirm(value);
+            closeModal();
+        };
+    }
+
+    async function fetchFolders() {
+        const statusState = document.getElementById("statusState");
+        try {
+            const response = await fetch(SCRIPT_URL, {
+                method: "POST",
+                body: JSON.stringify({ action: "getSubfolders" })
+            });
+            const data = await response.json();
+            if(statusState) statusState.style.display = "none";
+
+            if (data.success) {
+                // Alphabetical sorting logic added here
+                allFoldersCache = data.folders
+                    .filter(f => !f.isSubfolder && f.name !== "PENDING REVIEW")
+                    .sort((a, b) => a.name.localeCompare(b.name));
+                renderFolders(allFoldersCache);
+            } else {
+                throw new Error(data.error || "Sync error.");
+            }
+        } catch (err) {
+            if(statusState) statusState.innerHTML = `<p>Connection failed: ${err.message}</p>`;
+        }
+    }
+
+    function filterFolders() {
+        const input = document.getElementById("folderSearch");
+        if (!input) return;
+
+        const query = input.value.trim().toLowerCase();
+
+        if (!allFoldersCache || allFoldersCache.length === 0) return;
+
+        const filtered = allFoldersCache.filter(f => {
+            return (f.name || "").toLowerCase().includes(query);
+        });
+
+        renderFolders(filtered);
+    }
+
+    function renderFolders(folders) {
+        const grid = document.getElementById("mainGrid");
+        grid.innerHTML = ""; 
+        const coreIcons = { 
+            "Memorandum": "fa-file-signature", 
+            "Accomplishment": "fa-chart-line", 
+            "Service": "fa-hand-holding-heart", 
+            "Survey": "fa-clipboard-check" 
+        };
+        
+        if (folders.length === 0) {
+            grid.innerHTML = '<div class="loading-overlay" style="grid-column: 1/-1; text-align: center; padding: 50px;"><p>No matching categories found.</p></div>';
+            return;
+        }
+
+        folders.forEach(folder => {
+            const iconClass = coreIcons[folder.name] || "fa-folder-open";
+            const card = document.createElement('div');
+            card.className = 'folder-card';
+            card.id = `folder-${folder.id}`;
+            
+            // Navigation click
+            card.onclick = () => location.href = `categoryDetails.html?folder=${encodeURIComponent(folder.name)}&folderId=${folder.id}`;
+            
+            card.innerHTML = `
+                <div class="folder-options">
+                    <button class="dots-btn" onclick="toggleMenu(event, '${folder.id}')">
+                        <i class="fa-solid fa-ellipsis-vertical"></i>
+                    </button>
+                    <div class="options-menu" id="menu-${folder.id}">
+                        <button class="menu-item" onclick="event.stopPropagation(); triggerRenameModal('${folder.id}', '${folder.name}')">
+                            <i class="fa-solid fa-pen-to-square"></i> Rename
+                        </button>
+                        <button class="menu-item delete" onclick="event.stopPropagation(); triggerDeleteModal('${folder.id}', '${folder.name}')">
+                            <i class="fa-solid fa-trash-can"></i> Delete
+                        </button>
+                    </div>
+                </div>
+                <div class="folder-icon"><i class="fa-solid ${iconClass}"></i></div>
+                <div class="folder-info">
+                    <h3>${folder.name}</h3>
+                    <p>Manage documents</p>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    function toggleMenu(event, id) {
+        event.stopPropagation(); // Prevents the card click from triggering
+        
+        // Close other open menus
+        document.querySelectorAll('.options-menu').forEach(m => {
+            if (m.id !== `menu-${id}`) m.classList.remove('show');
+        });
+        
+        // Toggle current menu
+        const menu = document.getElementById(`menu-${id}`);
+        menu.classList.toggle('show');
+    }
+
+    // Close menu if user clicks anywhere else on the screen
+    document.addEventListener('click', () => {
+        document.querySelectorAll('.options-menu').forEach(m => m.classList.remove('show'));
+    });
+
+    function triggerRenameModal(id, currentName) {
+        const input = document.getElementById("modalInput");
+        input.value = currentName;
+        openModal({
+            title: "Rename Folder",
+            desc: `Enter a new name for <b>"${currentName}"</b>:`,
+            icon: "fa-pen-to-square",
+            isDanger: false,
+            showInput: true,
+            onConfirm: (newName) => processRenameFolder(id, newName)
+        });
+    }
+
+    async function processRenameFolder(id, newName) {
+        const overlay = document.getElementById('processOverlay');
+        document.getElementById('processTitle').textContent = "RENAMING FOLDER";
+        overlay.style.display = 'flex';
+
+        try {
+            const res = await fetch(SCRIPT_URL, {
+                method: "POST",
+                body: JSON.stringify({ action: "renameItem", itemId: id, newName: newName.trim() })
+            });
+            const result = await res.json();
+            if (result.success) {
+                showToast("Folder renamed!");
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showToast(result.error, true);
+                overlay.style.display = 'none';
+            }
+        } catch (e) {
+            showToast("Connection failed.", true);
+            overlay.style.display = 'none';
+        }
+    }
+
+    function triggerDeleteModal(id, name) {
+        openModal({
+            title: "Confirm Deletion",
+            desc: `Permanently delete <b>"${name}"</b>?<br>This moves it to Drive trash.`,
+            icon: "fa-triangle-exclamation",
+            isDanger: true,
+            showInput: false,
+            onConfirm: () => deleteCategory(id, name)
+        });
+    }
+
+    async function deleteCategory(id, name) {
+        const card = document.getElementById(`folder-${id}`);
+        card.style.opacity = "0.5";
+        card.style.pointerEvents = "none";
+
+        try {
+            const res = await fetch(SCRIPT_URL, {
+                method: "POST",
+                body: JSON.stringify({ action: "deleteItem", itemId: id })
+            });
+            const result = await res.json();
+            if (result.success) {
+                showToast(`"${name}" Deleted Successfully`);
+                setTimeout(() => location.reload(), 800);
+            } else {
+                showToast(`Error: ${result.error}`, true);
+                card.style.opacity = "1";
+                card.style.pointerEvents = "auto";
+            }
+        } catch (e) { 
+            showToast("Connection failed.", true); 
+            card.style.opacity = "1";
+            card.style.pointerEvents = "auto";
+        }
+    }
+
+    async function triggerCreateFolder() {
+        openModal({
+            title: "New Folder",
+            desc: "Enter a name for the new folder:",
+            icon: "fa-folder-plus",
+            isDanger: false,
+            showInput: true,
+            onConfirm: (name) => processCreateFolder(name)
+        });
+    }
+
+    async function processCreateFolder(name) {
+        const overlay = document.getElementById('processOverlay');
+        document.getElementById('processTitle').textContent = "CREATING FOLDER";
+        overlay.style.display = 'flex';
+        
+        const btn = document.getElementById('createBtn');
+        btn.disabled = true;
+
+        try {
+            const res = await fetch(SCRIPT_URL, {
+                method: "POST",
+                body: JSON.stringify({ action: "createDestinationFolder", folderName: name.trim() })
+            });
+            const result = await res.json();
+            if (result.success) {
+                showToast("Folder created!");
+                setTimeout(() => location.reload(), 1000);
+            } else { 
+                showToast(result.error, true);
+                btn.disabled = false; 
+                overlay.style.display = 'none';
+            }
+        } catch (e) {
+            showToast("Network error.", true);
+            btn.disabled = false;
+            overlay.style.display = 'none';
+        }
+    }
+</script>
+</body>
+</html>

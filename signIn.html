@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign In | Provincial Population Office</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <style>
+    :root {
+      --dark-green: #1a4d2e;
+      --accent-green: #2ecc71;
+      --soft-white: #f8fafc;
+      --text-dark: #2c2c2c;
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+    
+    body { 
+      background: #f0f2f5; 
+      min-height: 100vh; 
+      display: flex; 
+      flex-direction: column;
+    }
+
+    /* ===== OFFICIAL HEADER (UPDATED TO PROVINCIAL POPULATION OFFICE) ===== */
+    header {
+        background: #ffffff;
+        padding: 15px 5%;
+        border-bottom: 1px solid #e2e8f0;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .header-left {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .header-left img {
+        height: 75px;
+        width: auto;
+        object-fit: contain;
+        transition: transform 0.3s ease;
+    }
+
+    .header-left img:hover { transform: scale(1.05); }
+
+    .header-center {
+        text-align: center;
+        flex: 1;
+        padding: 0 20px;
+        /* Add this line: */
+        margin-left: -95px; 
+    }
+
+    .provincial-title {
+
+        font-family: 'Montserrat', sans-serif;
+        font-size: 35px;
+        font-weight: 900; /* Extra bold */
+        color: #1a1a1a;   /* Nearly black */
+        letter-spacing: -0.8px;
+        line-height: 1;
+        text-transform: none; 
+    }
+
+    .office-text {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--dark-green); /* Using your theme green for the specific office */
+        display: block;
+        letter-spacing: 0.2px; 
+    }
+
+    .republic-text {
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        color: #666;
+        margin-bottom: -2px;
+        display: block;
+    }
+
+    nav {
+        display: flex;
+        align-items: center;
+        gap: 25px;
+    }
+
+    nav a {
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 700;
+        color: #444;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        position: relative;
+        padding: 10px 0;
+        transition: var(--transition);
+    }
+
+    nav a.active, nav a:hover { color: var(--dark-green); }
+
+    nav a.active::after, nav a:hover::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: var(--accent-green);
+        border-radius: 2px;
+    }
+
+    /* LOGIN DROPDOWN */
+    .login-dropdown { position: relative; }
+
+    .dropdown-menu {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        background: #ffffff;
+        min-width: 220px;
+        border-radius: 8px;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        display: none;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(10px);
+        transition: var(--transition);
+        overflow: hidden;
+        border: 1px solid #eee;
+        margin-top: 10px;
+    }
+
+    .login-dropdown:hover .dropdown-menu {
+        display: block;
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+
+    .dropdown-menu a {
+        display: block;
+        padding: 15px 20px;
+        margin: 0;
+        color: var(--dark-green);
+        border-bottom: 1px solid #f0f0f0;
+        text-transform: none;
+        font-size: 14px;
+    }
+    
+    .dropdown-menu a:hover { background: #f8fafc; }
+
+    /* ===== MAIN SECTION ===== */
+    .main-wrapper {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      background: linear-gradient(rgba(26, 77, 46, 0.8), rgba(26, 77, 46, 0.9)),
+                  url('mainback.png') no-repeat center / cover;
+      background-attachment: fixed;
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 550px;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 24px;
+      padding: 50px 40px;
+      text-align: center;
+      color: #fff;
+      box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+      animation: fadeIn 0.6s ease-out;
+    }
+
+    .login-card h2 { font-family: 'Montserrat', sans-serif; font-size: 32px; font-weight: 800; margin-bottom: 10px; letter-spacing: -0.5px; }
+    .login-card p { margin-bottom: 35px; font-size: 15px; opacity: 0.8; font-weight: 300; }
+
+    /* ===== FORM STYLES ===== */
+    .form-group { margin-bottom: 20px; text-align: left; }
+    
+    .input-wrapper {
+      position: relative;
+      background: rgba(255, 255, 255, 0.15);
+      border: 1.5px solid rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      transition: var(--transition);
+    }
+
+    .input-wrapper:focus-within {
+      background: #fff;
+      border-color: var(--accent-green);
+    }
+
+    .input-wrapper i.field-icon {
+      position: absolute;
+      left: 18px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: rgba(255, 255, 255, 0.6);
+      transition: var(--transition);
+    }
+
+    .input-wrapper:focus-within i.field-icon { color: var(--dark-green); }
+
+    .form input {
+      width: 100%;
+      padding: 16px 16px 16px 48px;
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-size: 15px;
+      outline: none;
+    }
+
+    .input-wrapper:focus-within input { color: var(--text-dark); }
+    .form input::placeholder { color: rgba(255, 255, 255, 0.6); }
+    .input-wrapper:focus-within input::placeholder { color: #999; }
+
+    .toggle-password {
+      position: absolute;
+      right: 18px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      color: rgba(255, 255, 255, 0.6);
+      transition: var(--transition);
+    }
+    .input-wrapper:focus-within .toggle-password { color: var(--dark-green); }
+
+    .forgot { margin: -10px 0 25px; text-align: right; }
+    .forgot a { color: rgba(255, 255, 255, 0.7); font-size: 13px; text-decoration: none; transition: var(--transition); }
+    .forgot a:hover { color: #fff; text-decoration: underline; }
+
+    .submit-btn {
+      width: 100%;
+      padding: 16px;
+      border-radius: 12px;
+      border: none;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      background: var(--accent-green);
+      color: #fff;
+      transition: var(--transition);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .submit-btn:hover {
+      background: #fff;
+      color: var(--dark-green);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    }
+
+    .submit-btn:disabled {
+      background: #ccc;
+      transform: none;
+      cursor: not-allowed;
+    }
+
+    .divider {
+      margin: 30px 0;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.5);
+      text-transform: uppercase;
+    }
+
+    .divider::before, .divider::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .google-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 14px;
+      background: #fff;
+      color: #333;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      border: none;
+    }
+
+    .google-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
+    .google-btn img { width: 22px; }
+
+    /* NEW ERROR NOTIFICATION STYLES */
+    .error-toast {
+      position: fixed;
+      top: 25px;
+      right: 25px;
+      background: #e74c3c;
+      color: white;
+      padding: 15px 25px;
+      border-radius: 12px;
+      box-shadow: 0 15px 35px rgba(231, 76, 60, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 9999;
+      font-weight: 600;
+      animation: slideInRight 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+
+    .shake {
+      animation: shakeAnim 0.4s ease-in-out;
+    }
+
+    .input-error {
+      border-color: #e74c3c !important;
+      background: rgba(231, 76, 60, 0.1) !important;
+    }
+
+    @keyframes slideInRight {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    @keyframes shakeAnim {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-10px); }
+      50% { transform: translateX(10px); }
+      75% { transform: translateX(-10px); }
+    }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    @media (max-width: 992px) {
+        header { flex-direction: column; gap: 20px; text-align: center; }
+        .header-left img { height: 60px; }
+        .login-card { padding: 40px 25px; }
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+    <div class="header-left">
+        <img src="logo4.png" alt="Bagong Pilipinas">
+        <img src="logo2.png" alt="Province of Misamis Oriental">
+        <img src="logo3.png" alt="PPO">
+    </div>
+
+    <div class="header-center">
+        <span class="republic-text">Republic of the Philippines</span>
+
+        <span class="office-text">Province of Misamis Oriental</span>
+
+        <h1 class="provincial-title">Provincial Population Office</h1>
+    </div>
+
+    <nav>
+        <a href="landingpage.html">Home</a>
+        <a href="signUp.html">Sign Up</a>
+        <div class="login-dropdown">
+            <a href="#" class="active">Login <i class="fa-solid fa-chevron-down" style="font-size: 10px; margin-left: 5px;"></i></a>
+            <div class="dropdown-menu">
+                <a href="signIn.html"><i class="fa-solid fa-user" style="margin-right: 10px;"></i> User</a>
+                <a href="adminLogin.html"><i class="fa-solid fa-user-shield" style="margin-right: 10px;"></i> Administrator</a>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<div class="main-wrapper">
+  <div class="login-card">
+    <h2>Welcome Back</h2>
+    <p>Please enter your details to access your dashboard</p>
+
+    <form class="form" id="loginForm">
+      <div class="form-group">
+        <div class="input-wrapper">
+          <i class="fa-solid fa-envelope field-icon"></i>
+          <input type="email" id="email" placeholder="Email Address" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="input-wrapper">
+          <i class="fa-solid fa-lock field-icon"></i>
+          <input type="password" id="password" placeholder="Password" required>
+          <i class="fa-solid fa-eye-slash toggle-password" id="togglePassword"></i>
+        </div>
+      </div>
+
+      <div class="forgot">
+        <a id="forgotPassword" href="#">Forgot Password?</a>
+      </div>
+
+      <button type="submit" class="submit-btn" id="submitBtn">Sign In</button>
+
+      <div class="divider">or continue with</div>
+
+      <button type="button" class="google-btn" id="googleLogin">
+        <img src="google.png" alt="Google">
+        Google Account
+      </button>
+    </form>
+  </div>
+</div>
+
+<script type="module">
+  import { handleLogin, handleGoogleLogin } from "./backend.js";
+
+  const loginForm = document.getElementById("loginForm");
+  const submitBtn = document.getElementById("submitBtn");
+  const emailInput = document.getElementById("email");
+  const passInput = document.getElementById("password");
+  const toggleIcon = document.getElementById("togglePassword");
+  const googleBtn = document.getElementById("googleLogin");
+
+  // Helper for showing custom error pop-up
+  const showLoginError = (msg) => {
+    // Remove old toast if it exists
+    const oldToast = document.querySelector('.error-toast');
+    if (oldToast) oldToast.remove();
+
+    // Create Toast
+    const toast = document.createElement('div');
+    toast.className = 'error-toast';
+    toast.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> ${msg}`;
+    document.body.appendChild(toast);
+
+    // Shake Card
+    const card = document.querySelector('.login-card');
+    card.classList.add('shake');
+
+    // Highlight Fields
+    document.querySelectorAll('.input-wrapper').forEach(w => w.classList.add('input-error'));
+
+    // Cleanup
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateX(20px)';
+      toast.style.transition = '0.5s ease';
+      setTimeout(() => toast.remove(), 500);
+      card.classList.remove('shake');
+    }, 3500);
+  };
+
+  // Clear error styles when typing
+  [emailInput, passInput].forEach(input => {
+    input.addEventListener('input', () => {
+      document.querySelectorAll('.input-wrapper').forEach(w => w.classList.remove('input-error'));
+    });
+  });
+
+  toggleIcon.onclick = () => {
+    const show = passInput.type === "password";
+    passInput.type = show ? "text" : "password";
+    toggleIcon.classList.toggle("fa-eye", show);
+    toggleIcon.classList.toggle("fa-eye-slash", !show);
+  };
+
+  loginForm.onsubmit = async e => {
+    e.preventDefault();
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Verifying...';
+
+    try {
+      const result = await handleLogin(emailInput.value.trim(), passInput.value);
+      
+      let displayName = "";
+      if(result?.firstName && result?.lastName){
+        displayName = `${result.firstName} ${result.lastName}`;
+      } else if(result?.fullname){
+        displayName = result.fullname;
+      } else {
+        displayName = emailInput.value.trim();
+      }
+
+      localStorage.setItem("ppoUserName", displayName);
+      
+      const role = result?.role || result;
+      window.location.href = role === "admin" ? "dashboardMenu.html" : "ProfileUser.html";
+    } catch {
+      showLoginError("Invalid email or password.");
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Sign In";
+    }
+  };
+
+  googleBtn.onclick = async () => {
+    try {
+      const result = await handleGoogleLogin();
+
+      let displayName = "";
+      if(result?.firstName && result?.lastName){
+        displayName = `${result.firstName} ${result.lastName}`;
+      } else if(result?.fullname){
+        displayName = result.fullname;
+      } else if(result?.displayName){
+        displayName = result.displayName;
+      } else {
+        displayName = "User";
+      }
+
+      localStorage.setItem("ppoUserName", displayName);
+
+      const role = result?.role || result;
+      window.location.href = role === "admin" ? "dashboardMenu.html" : "ProfileUser.html";
+    } catch {
+      showLoginError("Google sign-in failed.");
+    }
+  };
+
+  document.getElementById("forgotPassword").onclick = (e) => {
+    e.preventDefault();
+    alert("Please contact your administrator for password reset.");
+  };
+</script>
+
+</body>
+</html>

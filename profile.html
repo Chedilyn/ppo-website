@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile | PPO Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+        :root {
+            --primary-green: #1a4d2e;
+            --accent-green: #2ecc71;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --card-white: #ffffff;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --sidebar-width: 320px;
+            --danger: #ef4444;
+            --panel-bg: #f8fafc;
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.05); }
+        ::-webkit-scrollbar-thumb { background: var(--accent-green); border-radius: 10px; }
+
+        body { 
+            margin: 0; 
+            font-family: 'Outfit', sans-serif; 
+            background: radial-gradient(circle at 0% 0%, #1a4d2e 0%, #071a0f 100%); 
+            color: white; 
+            display: flex; 
+            flex-direction: column; 
+            height: 100vh; 
+            overflow: hidden;
+        }
+
+        /* CENTER LOADING OVERLAY */
+        #globalLoader {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(10px);
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 9999;
+        }
+        .spinner { 
+            width: 60px; height: 60px; border: 5px solid rgba(255,255,255,0.1); 
+            border-top: 5px solid var(--accent-green); border-radius: 50%; 
+            animation: spin 1s linear infinite; margin-bottom: 20px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        #loaderText { font-family: 'Montserrat'; font-weight: 900; color: white; margin: 0; text-transform: uppercase; letter-spacing: 2px; }
+
+        .header {
+            background: #ffffff;
+            padding: 15px 5%;
+            border-bottom: 3px solid var(--accent-green);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left { display: flex; align-items: center; gap: 15px; margin-left: -50px; }
+        .header-left img { height: 75px; width: auto; object-fit: contain; }
+        .header-center { text-align: center; flex: 1; padding: 0 20px; margin-right: -80px; }
+        .header h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--primary-green);
+            letter-spacing: -0.5px;
+            line-height: 1.2;
+            text-transform: uppercase;
+            margin: 0;
+        }
+
+        .nav-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f0f2f5;
+            padding: 6px;
+            border-radius: 40px;
+            border: 1px solid #e2e8f0;
+            margin-right: -75px;
+        }
+
+        .notif-wrapper {
+            position: relative;
+            cursor: pointer;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-green);
+            font-size: 18px;
+        }
+
+        .notif-dot {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 10px;
+            height: 10px;
+            background: #ef4444;
+            border-radius: 50%;
+            border: 2px solid #f0f2f5;
+            display: none;
+        }
+
+        .nav-btn {
+            padding: 8px 18px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 12px;
+            text-transform: uppercase;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-dash { color: var(--primary-green); }
+        .btn-dash:hover { background: var(--primary-green); color: white; }
+        .btn-logout { color: #ef4444; }
+        .btn-logout:hover { background: #ef4444; color: white; }
+
+        .main-wrapper { 
+            display: flex; 
+            flex: 1; 
+            padding: 15px; 
+            gap: 15px; 
+            overflow: hidden; 
+            max-width: 100%; 
+            margin: 0;
+            width: 100%;
+            box-sizing: border-box;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* UPDATED NOTIFICATION PANEL (SLIDING SCROLL) */
+        .notif-panel {
+            position: fixed; 
+            right: -420px; 
+            top: 0; 
+            width: 380px; 
+            height: 100vh;
+            background: var(--panel-bg); 
+            z-index: 2000; 
+            box-shadow: -15px 0 40px rgba(0,0,0,0.2);
+            transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1); 
+            display: flex;
+            flex-direction: column;
+        }
+
+        .notif-panel.open { right: 0; }
+
+        .notif-header {
+            padding: 25px;
+            background: #ffffff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        #notifList {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* REQUEST CARD UI (MATCHING IMAGE) */
+        .request-card {
+            background: white;
+            border-radius: 12px;
+            padding: 18px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            border: 1px solid #f1f5f9;
+        }
+
+        .request-card h4 {
+            margin: 0 0 5px 0;
+            color: #1e293b;
+            font-size: 14px;
+            font-weight: 800;
+            word-break: break-all;
+        }
+
+        .request-time {
+            font-size: 11px;
+            color: #64748b;
+            display: block;
+            margin-bottom: 15px;
+        }
+
+        .feedback-box {
+            width: 100%;
+            height: 70px;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 12px;
+            font-family: inherit;
+            font-size: 13px;
+            resize: none;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+            background: #fafafa;
+        }
+
+        .action-btns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn-request-accept { background: var(--accent-green); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 800; cursor: pointer; transition: 0.2s; font-size: 11px; text-transform: uppercase; }
+        .btn-request-reject { background: var(--danger); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 800; cursor: pointer; transition: 0.2s; font-size: 11px; text-transform: uppercase; }
+        .btn-request-comment { 
+            width: 100%; 
+            background: #f1f5f9; 
+            color: #475569; 
+            border: none; 
+            padding: 12px; 
+            border-radius: 8px; 
+            font-weight: 800; 
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+
+        .profile-card { 
+            width: var(--sidebar-width); 
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            padding: 30px 20px; 
+            box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.5);
+            align-self: stretch;
+        }
+
+        .avatar-halo { 
+            width: 200px;  /* bigger */
+            height: 200px; /* bigger */
+            border-radius: 50%; 
+            background: linear-gradient(45deg, var(--accent-green), #00ff88); 
+            padding: 5px; 
+            margin-bottom: 25px; /* more space below */
+            margin-top: 100px;     /* moves it lower inside the card */
+            box-shadow: 0 0 35px rgba(46, 204, 113, 0.5); /* slightly stronger glow */
+        }
+
+        .avatar-inner { 
+            width: 100%; 
+            height: 100%; 
+            background: #071a0f; 
+            border-radius: 50%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 48px; /* slightly bigger icon */
+            color: var(--accent-green);
+        }
+
+        .user-name { 
+            font-size: 50px;             /* slightly bigger */
+            font-weight: 900;            /* bolder */
+            margin: 0 0 5px 0; 
+            color: white; 
+            letter-spacing: 1px; 
+            text-align: center;          /* center under avatar */
+        }
+
+        .user-dept { 
+            font-size: 20px;             /* slightly bigger */
+            color: var(--accent-green); 
+            text-transform: uppercase; 
+            letter-spacing: 2px; 
+            font-weight: 700; 
+            opacity: 0.9; 
+            text-align: center;          /* center under name */
+            margin-bottom: 20px;         /* space below role */
+        }
+
+        .stats-box {
+            margin-top: auto; 
+            width: 100%; background: rgba(0,0,0,0.4);
+            border-radius: 20px; padding: 20px; display: flex; flex-direction: column; gap: 15px;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .stat-item { display: flex; justify-content: space-between; font-size: 13px; align-items: center; }
+        .stat-label { color: #889990; }
+        .stat-value { font-weight: 700; background: rgba(255, 255, 255, 0.05); padding: 4px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); }
+
+        .content-area { 
+            flex: 1; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 15px; 
+            overflow: hidden;
+        }
+
+        .kpi-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+
+        .kpi-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.02) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-left: 5px solid var(--accent-green);
+            border-radius: 20px;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: var(--transition);
+        }
+
+        .kpi-card:nth-child(1) { border-left-color: #f1c40f; }
+        .kpi-card:nth-child(3) { border-left-color: var(--danger); }
+        .kpi-card:nth-child(4) { border-left-color: #3498db; }
+
+        .kpi-icon {
+            font-size: 24px;
+            opacity: 0.8;
+            width: 30px;
+            text-align: center;
+        }
+
+        .kpi-card:nth-child(1) .kpi-icon { color: #f1c40f; }
+        .kpi-card:nth-child(2) .kpi-icon { color: var(--accent-green); }
+        .kpi-card:nth-child(3) .kpi-icon { color: var(--danger); }
+        .kpi-card:nth-child(4) .kpi-icon { color: #3498db; }
+
+        .kpi-value { font-size: 28px; font-weight: 800; color: white; display: block; line-height: 1; margin-bottom: 2px;}
+        .kpi-label { font-size: 10px; color: #a3b1aa; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; }
+
+        .search-container { position: relative; width: 100%; }
+        .search-container i { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); color: var(--accent-green); font-size: 18px; }
+        .search-input {
+            width: 100%; background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 15px 15px 15px 55px; border-radius: 15px; color: white; font-size: 15px; outline: none; transition: var(--transition); box-sizing: border-box;
+        }
+
+        .scroll-section {
+            flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; overflow: hidden; padding-bottom: 10px;
+        }
+
+        .history-section {
+            background: rgba(0, 0, 0, 0.3); border-radius: 25px; padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05); display: flex; flex-direction: column;
+            backdrop-filter: blur(5px);
+            min-height: 0;
+            max-height: 100%;
+        }
+
+        .list-container {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 5px;
+            margin-top: 5px;
+        }
+
+        .history-section-header {
+            display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;
+        }
+
+        .history-section-header h3 {
+            margin: 0; font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: #a3b1aa; font-weight: 800;
+        }
+
+        .activity-card { 
+            background: rgba(255, 255, 255, 0.98); border-radius: 12px; padding: 12px 15px; 
+            display: flex; justify-content: space-between; align-items: flex-start; 
+            margin-bottom: 10px; color: #1e293b; transition: var(--transition);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .card-main { display: flex; align-items: flex-start; gap: 12px; flex: 1; min-width: 0; }
+
+        .file-info { flex: 1; min-width: 0; }
+        .file-info .name { 
+            font-weight:700; 
+            font-size:14px; 
+            display:block; 
+            white-space: normal; 
+            word-break: break-all; 
+            line-height: 1.4;
+            color: #1e293b;
+            margin-bottom: 4px;
+        }
+
+        .file-info .date { 
+            font-size: 11px; 
+            color: #64748b; 
+            display: flex; 
+            align-items: center; 
+            gap: 5px;
+            font-weight: 500;
+        }
+
+        .bulk-delete-btn {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 10px;
+            font-weight: 800;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: var(--transition);
+            white-space: nowrap;
+            height: 28px;
+        }
+
+
+        .action-menu {
+    position: relative;
+}
+
+        .menu-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            border: none;
+            background: #f1f5f9;
+            color: #1e293b;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .menu-dropdown {
+            position: absolute;
+            top: 35px;
+            right: 0;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            overflow: hidden;
+            display: none;
+            flex-direction: column;
+            min-width: 120px;
+            z-index: 100;
+        }
+
+        .menu-dropdown button,
+        .menu-dropdown a {
+            padding: 10px;
+            font-size: 12px;
+            border: none;
+            background: none;
+            text-align: left;
+            cursor: pointer;
+            text-decoration: none;
+            color: #1e293b;
+        }
+
+        .menu-dropdown button:hover,
+        .menu-dropdown a:hover {
+            background: #f1f5f9;
+        }
+
+        .menu-dropdown .delete {
+            color: #ef4444;
+        }
+
+        .bulk-delete-btn:hover { background: #ef4444; color: white; }
+
+        #customModalOverlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(5px);
+            display: none; align-items: center; justify-content: center; z-index: 3000;
+        }
+        .modal-card {
+            background: white; padding: 40px; border-radius: 30px; width: 90%; max-width: 450px; text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div id="globalLoader">
+    <div class="spinner"></div>
+    <h2 id="loaderText">Processing...</h2>
+</div>
+
+<div id="notification-container"></div>
+<div id="customModalOverlay">
+    <div class="modal-card">
+        <div id="modalIcon" style="font-size: 60px; margin-bottom: 20px;"></div>
+        <h2 id="modalTitle" style="color:var(--primary-green); margin:0 0 10px; font-family:'Montserrat'; font-weight:800; font-size: 24px;">Action Required</h2>
+        <p id="modalMessage" style="color:#64748b; margin-bottom:35px; font-size:16px; line-height:1.5;"></p>
+        <div style="display:flex; gap:15px;">
+            <button id="modalCancel" style="flex:1; padding:16px; border-radius:15px; border:none; background:#f1f5f9; color:#64748b; font-weight:700; cursor:pointer;">CANCEL</button>
+            <button id="modalConfirm" style="flex:1; padding:16px; border-radius:15px; border:none; color:white; font-weight:700; cursor:pointer;">CONFIRM</button>
+        </div>
+    </div>
+</div>
+
+<div class="notif-panel" id="notifPanel">
+    <div class="notif-header">
+        <h3 style="margin:0; color:#1a4d2e; font-family:'Montserrat'; font-weight:800; display:flex; align-items:center; gap:10px;">
+            <i class="fa-solid fa-bell"></i> REQUESTS
+        </h3>
+        <i class="fa-solid fa-xmark" onclick="toggleNotif()" style="cursor:pointer; font-size:20px; color:#94a3b8;"></i>
+    </div>
+    <div id="notifList">
+        </div>
+</div>
+
+<header class="header">
+    <div class="header-left">
+        <img src="logo4.png" alt="Logo">
+        <img src="logo2.png" alt="Logo">
+        <img src="logo3.png" alt="Logo">
+    </div>
+    <div class="header-center">
+        <h1>Provincial Population Office</h1>
+    </div>
+    <div class="nav-controls">
+        <div class="notif-wrapper" onclick="toggleNotif()" id="bellIcon">
+            <i class="fa-solid fa-bell"></i>
+            <div class="notif-dot" id="notifDot"></div>
+        </div>
+        <a href="dashboardMenu.html" class="nav-btn btn-dash"><i class="fa-solid fa-house"></i> Dashboard</a>
+        <a href="landingpage.html" class="nav-btn btn-logout"><i class="fa-solid fa-power-off"></i> Log Out</a>
+    </div>
+</header>
+
+<div class="main-wrapper">
+    <aside class="profile-card">
+        <div class="avatar-halo">
+            <div class="avatar-inner"><i class="fa-solid fa-user-shield"></i></div>
+        </div>
+        <h1 class="user-name">ADMIN</h1>
+        <p class="user-dept">PPO Chief Admin</p>
+        
+        <div class="stats-box">
+            <div class="stat-item">
+                <span class="stat-label"><i class="fa-solid fa-terminal" style="margin-right: 8px;"></i> System Logs</span>
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <i class="fa-solid fa-arrows-rotate" id="refreshBtn" onclick="loadFiles()" style="cursor:pointer; font-size:10px; color:var(--accent-green); opacity:0.6;" title="Refresh Data"></i>
+                    <span class="stat-value" id="countVal">0</span>
+                </div>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label"><i class="fa-solid fa-layer-group" style="margin-right: 8px;"></i> Access Level</span>
+                <span class="stat-value" style="color:#3498db; border-color:rgba(52,152,219,0.3)">SUPER</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label"><i class="fa-solid fa-shield-halved" style="margin-right: 8px;"></i> Security</span>
+                <span class="stat-value" style="color:var(--accent-green); border-color:rgba(46,204,113,0.3)">ACTIVE</span>
+            </div>
+        </div>
+    </aside>
+
+    <main class="content-area">
+        <div class="kpi-row">
+            <div class="kpi-card">
+                <div class="kpi-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                <div class="kpi-data"><span class="kpi-value" id="kpiPending">0</span><span class="kpi-label">Pending</span></div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon"><i class="fa-solid fa-circle-check"></i></div>
+                <div class="kpi-data"><span class="kpi-value" id="kpiAccepted">0</span><span class="kpi-label">Accepted</span></div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon"><i class="fa-solid fa-circle-xmark"></i></div>
+                <div class="kpi-data"><span class="kpi-value" id="kpiRejected">0</span><span class="kpi-label">Rejected</span></div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon"><i class="fa-solid fa-database"></i></div>
+                <div class="kpi-data"><span class="kpi-value" id="kpiTotal">0</span><span class="kpi-label">Total Volume</span></div>
+            </div>
+        </div>
+
+        <div class="search-container">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="fileSearch" class="search-input" placeholder="Search by filename, type, or date..." onkeyup="filterFiles()">
+        </div>
+
+        <div class="scroll-section">
+            <div class="history-section">
+                <div class="history-section-header">
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <input type="checkbox" id="selectAllAccepted" class="custom-cb" onclick="toggleSelectAll('APPROVED')">
+                        <h3>Accepted</h3>
+                    </div>
+                    <div style="display:flex; gap:8px;">
+                        <button id="delBtnAPPROVED" class="bulk-delete-btn" style="display:none;" onclick="deleteSelected('APPROVED')">
+                            <i class="fa-solid fa-trash-can"></i> SELECTED
+                        </button>
+                        <button class="bulk-delete-btn" onclick="bulkDelete('APPROVED')"><i class="fa-solid fa-trash-can"></i> ALL</button>
+                    </div>
+                </div>
+                <div id="acceptedContainer" class="list-container"></div>
+            </div>
+
+            <div class="history-section">
+                <div class="history-section-header">
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <input type="checkbox" id="selectAllRejected" class="custom-cb" onclick="toggleSelectAll('REJECTED')">
+                        <h3>Rejected</h3>
+                    </div>
+                    <div style="display:flex; gap:8px;">
+                        <button id="delBtnREJECTED" class="bulk-delete-btn" style="display:none;" onclick="deleteSelected('REJECTED')">
+                            <i class="fa-solid fa-trash-can"></i> SELECTED
+                        </button>
+                        <button class="bulk-delete-btn" onclick="bulkDelete('REJECTED')"><i class="fa-solid fa-trash-can"></i> ALL</button>
+                    </div>
+                </div>
+                <div id="rejectedContainer" class="list-container"></div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzukBdhRzbWPWLMH1hrmL7iZIL6x37aI2h6jEDAiaLp0sat212xHbmj1THFni6VpeHJ/exec";
+let cachedData = [];
+let isFetching = false;
+
+function showGlobalLoader(text) {
+    document.getElementById("loaderText").innerText = text;
+    document.getElementById("globalLoader").style.display = "flex";
+}
+function hideGlobalLoader() { document.getElementById("globalLoader").style.display = "none"; }
+
+function toggleNotif() { document.getElementById("notifPanel").classList.toggle("open"); }
+function showToast(msg) {
+    const c = document.getElementById("notification-container");
+    if(!c) return;
+    const t = document.createElement("div"); t.style.cssText = "position:fixed; bottom:20px; right:20px; background:var(--primary-green); color:white; padding:15px 25px; border-radius:10px; z-index:9999; animation: fadeIn 0.3s ease;";
+    t.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${msg}`;
+    c.appendChild(t); setTimeout(() => t.remove(), 4000);
+}
+
+function filterFiles() {
+    const q = document.getElementById("fileSearch").value.toLowerCase();
+    renderLists(cachedData.filter(f => f.name.toLowerCase().includes(q)));
+}
+
+async function showCustomConfirm(title, message, type) {
+    return new Promise((resolve) => {
+        const o = document.getElementById("customModalOverlay");
+        const confirmBtn = document.getElementById("modalConfirm");
+        document.getElementById("modalIcon").innerHTML = type === 'DELETE' ? '<i class="fa-solid fa-trash-can" style="color:#ef4444"></i>' : '<i class="fa-solid fa-check-circle" style="color:#2ecc71"></i>';
+        confirmBtn.style.background = type === 'DELETE' ? '#ef4444' : '#2ecc71';
+        document.getElementById("modalTitle").innerText = title;
+        document.getElementById("modalMessage").innerText = message;
+        o.style.display = "flex";
+        confirmBtn.onclick = () => { o.style.display = "none"; resolve(true); };
+        document.getElementById("modalCancel").onclick = () => { o.style.display = "none"; resolve(false); };
+    });
+}
+
+function toggleSelectAll(status) {
+    const master = status === 'APPROVED' ? document.getElementById('selectAllAccepted') : document.getElementById('selectAllRejected');
+    const items = document.querySelectorAll(`.cb-${status}`);
+    items.forEach(cb => cb.checked = master.checked);
+    updateBulkBtn(status);
+}
+
+function updateBulkBtn(status) {
+    const checked = document.querySelectorAll(`.cb-${status}:checked`).length;
+    const btn = document.getElementById(`delBtn${status}`);
+    if(btn) btn.style.display = checked > 0 ? 'flex' : 'none';
+}
+
+async function deleteSelected(status) {
+
+    const checkedBoxes = document.querySelectorAll(`.cb-${status}:checked`);
+    const ids = Array.from(checkedBoxes).map(cb => cb.value);
+
+    if (!ids.length) return;
+
+    if (!(await showCustomConfirm("Delete Selected?", `Hide ${ids.length} records?`, 'DELETE'))) return;
+
+    showToast("Deleting...");
+    showGlobalLoader("DELETING SELECTED...");
+
+    try {
+        const res = await fetch(SCRIPT_URL, {
+            method: "POST",
+            body: JSON.stringify({
+                action: "hideAll",
+                fileIds: ids
+            })
+        });
+
+        const result = await res.json();
+
+        if (result.success) {
+
+            // ✅ INSTANT UI HIDE (NO REFRESH NEEDED)
+            cachedData = cachedData.map(f => 
+                ids.includes(f.id) ? { ...f, hidden: true } : f
+            );
+
+            renderLists(cachedData);
+
+            showToast("Deleted Successfully");
+
+            if (status === 'APPROVED') {
+                document.getElementById('selectAllAccepted').checked = false;
+            } else {
+                document.getElementById('selectAllRejected').checked = false;
+            }
+
+        } else {
+            showToast("Delete failed");
+        }
+
+    } catch (e) {
+        showToast("Error deleting selected");
+    } finally {
+        hideGlobalLoader();
+    }
+}
+
+async function bulkDelete(status) {
+
+    const targets = cachedData.filter(f => (f.status || "").toUpperCase() === status);
+    if (!targets.length) return showToast("No files to delete.");
+
+    if (!(await showCustomConfirm("Delete All?", `Hide ${targets.length} records?`, 'DELETE'))) return;
+
+    const ids = targets.map(f => f.id);
+
+    showGlobalLoader("DELETING...");
+
+    try {
+        const res = await fetch(SCRIPT_URL, {
+            method: "POST",
+            body: JSON.stringify({
+                action: "hideAll",
+                fileIds: ids
+            })
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+
+            // ✅ REMOVE FROM CACHE IMMEDIATELY
+            cachedData = cachedData.map(f => 
+                ids.includes(f.id) ? { ...f, hidden: true } : f
+            );
+
+            // ✅ FORCE UI UPDATE
+            renderLists(cachedData);
+
+            showToast("Deleted Successfully");
+
+        } else {
+            showToast("Delete failed");
+        }
+
+    } catch (e) {
+        showToast("Error");
+    } finally {
+        hideGlobalLoader();
+    }
+}
+
+async function handleDelete(fileId) {
+
+    if (!(await showCustomConfirm("Delete this file?", "This file will be permanently deleted.", 'DELETE'))) return;
+
+    // 🔥 CREATE LOADER TEXT (CENTER STYLE)
+    showGlobalLoader("DELETING...");
+
+    // 🔥 SHOW "Deleting..." TOAST (NO REMOVE)
+    showToast("Deleting...");
+
+    try {
+        const res = await fetch(SCRIPT_URL, {
+            method: "POST",
+            body: JSON.stringify({ 
+                action: "hideFile",
+                fileId: fileId 
+            })
+        });
+
+        const result = await res.json();
+
+        if (result.success) {
+
+            // 🔥 SMALL DELAY → SMOOTHER UX
+            setTimeout(() => {
+                showToast("Deleted Successfully");
+            }, 300);
+
+            cachedData = cachedData.filter(f => f.id !== fileId);
+            renderLists(cachedData);
+
+        } else {
+            showToast("Delete failed");
+        }
+
+    } catch (e) {
+        showToast("Error deleting file");
+    } finally {
+        hideGlobalLoader();
+    }
+}
+
+async function handleApproval(fileId, decision, btn) {
+
+    const commentBox = document.getElementById(`comment-${fileId}`);
+    const comment = commentBox ? commentBox.value.trim() : "";
+
+    const originalText = btn.innerText;
+
+    btn.classList.add('btn-loading');
+    btn.innerText = 'PROCESSING...';
+
+    const parent = btn.parentElement;
+    const buttons = parent.querySelectorAll('button');
+    buttons.forEach(b => b.disabled = true);
+
+    try {
+
+        const res = await fetch(SCRIPT_URL, {
+            method: "POST",
+            body: JSON.stringify({
+                action: "handleApproval",
+                fileId: fileId,
+                decision: decision,
+                adminRemark: comment
+            })
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+
+            // 🔥 WAIT FOR UI UPDATE FIRST
+            await loadFiles();
+
+            // 🔥 SMALL DELAY FOR SMOOTHNESS
+            setTimeout(() => {
+                showToast(
+                    decision === "APPROVE"
+                        ? "Accepted Successfully"
+                        : "Rejected Successfully"
+                );
+            }, 200);
+
+        } else {
+            showToast("Server error");
+
+            buttons.forEach(b => b.disabled = false);
+            btn.innerText = originalText;
+            btn.classList.remove('btn-loading');
+        }
+
+    } catch (err) {
+
+        showToast("Network error");
+
+        buttons.forEach(b => b.disabled = false);
+        btn.innerText = originalText;
+        btn.classList.remove('btn-loading');
+
+    }
+}
+
+async function submitComment(fileId, btn) {
+    const comment = document.getElementById(`comment-${fileId}`).value;
+    if(!comment.trim()) return showToast("Please enter a comment");
+    
+    btn.classList.add('btn-loading');
+    try {
+        const res = await fetch(SCRIPT_URL, { 
+            method: "POST", 
+            body: JSON.stringify({ action: "submitComment", fileId: fileId, comment: comment }) 
+        });
+        if((await res.json()).success) showToast("Comment sent!");
+    } catch(e) { showToast("Error sending comment"); }
+    finally { btn.classList.remove('btn-loading'); }
+}
+
+function createFileCard(f) {
+    const isXls = f.name.toLowerCase().includes('xls');
+    const cbClass = f.status === 'APPROVED' ? 'cb-APPROVED' : 'cb-REJECTED';
+
+    // ✅ GET BOTH COMMENTS
+    const userComment = f.comment || "";
+    const adminComment = f.adminRemark || f.adminNotes || f.notification || "";
+
+    // ✅ SHOW BOTH
+    const commentPreview = `
+        ${userComment ? `
+            <div style="margin-top:8px; font-size:12px; color:#475569; background:#f1f5f9; padding:6px 10px; border-radius:8px;">
+                <b>MPO Remarks:</b> ${userComment}
+            </div>
+        ` : ''}
+
+        ${adminComment ? `
+            <div style="margin-top:6px; font-size:12px; color:#1e293b; background:#e7f3ec; padding:6px 10px; border-radius:8px; border-left:3px solid #2ecc71;">
+                <b>PPO Remarks:</b> ${adminComment}
+            </div>
+        ` : ''}
+    `;
+
+    const actionSection = f.status === "PENDING" ? `
+        <textarea id="comment-${f.id}" class="feedback-box" placeholder="Add a comment (optional)"></textarea>
+        <div class="action-btns">
+            <button class="btn-request-accept" onclick="handleApproval('${f.id}', 'APPROVE', this)">Approve</button>
+            <button class="btn-request-reject" onclick="handleApproval('${f.id}', 'REJECT', this)">Reject</button>
+        </div>
+    ` : '';
+
+    return `
+        <div class="activity-card">
+            <div class="card-main">
+                <input type="checkbox" class="custom-cb ${cbClass}" value="${f.id}" onclick="updateBulkBtn('${f.status}')">
+                <div class="card-icon-box" style="background:${isXls ? '#ecfdf5' : '#fef2f2'}; color:${isXls ? '#10b981' : '#ef4444'}; width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                    <i class="fa-solid ${isXls ? 'fa-file-excel' : 'fa-file-pdf'}" style="font-size: 14px;"></i>
+                </div>
+                <div class="file-info">
+                    <span class="name">${f.name}</span>
+                    <span class="date">
+                        <i class="fa-regular fa-clock"></i> ${f.date}
+                        &nbsp; | &nbsp;
+                        <i class="fa-solid fa-user"></i> ${f.fullname || "PPO"}
+                        &nbsp; | &nbsp;
+                        <i class="fa-solid fa-folder"></i> ${f.folder || "N/A"}
+                    </span>
+                    ${commentPreview}
+                </div>
+            </div>
+            <div class="action-menu">
+                <button class="menu-btn" onclick="toggleMenu(event, '${f.id}')">
+                    <i class="fa-solid fa-ellipsis-vertical"></i>
+                </button>
+
+                <div class="menu-dropdown" id="menu-${f.id}">
+                    <a href="${f.url}" target="_blank">
+                        <i class="fa-solid fa-eye"></i> View
+                    </a>
+                    <button class="delete" onclick="handleDelete('${f.id}')">
+                        <i class="fa-solid fa-trash"></i> Delete
+                    </button>
+                </div>
+            </div>
+            ${actionSection}
+        </div>
+    `;
+}
+
+
+function toggleMenu(event, id) {
+    event.stopPropagation();
+
+    const menu = document.getElementById(`menu-${id}`);
+    const isOpen = menu.style.display === "flex";
+
+    // Close all menus
+    document.querySelectorAll(".menu-dropdown").forEach(m => m.style.display = "none");
+
+    // If it was NOT open, then open it
+    if (!isOpen) {
+        menu.style.display = "flex";
+    }
+}
+
+function renderLists(files) {
+    const seenIds = new Set();
+
+    const uniqueFiles = files.filter(f => {
+        if (!f.id || seenIds.has(f.id)) return false;
+        if (f.hidden === true) return false; // ✅ ADD THIS LINE
+        seenIds.add(f.id);
+        return true;
+    });
+
+    // Sort by date descending (latest first)
+    uniqueFiles.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    const approved = uniqueFiles.filter(f => f.status === "APPROVED");
+    const rejected = uniqueFiles.filter(f => f.status === "REJECTED");
+    const pending = uniqueFiles.filter(f => (f.status || "PENDING") === "PENDING");
+
+    // Update KPI counters
+    document.getElementById("kpiPending").innerText = pending.length;
+    document.getElementById("kpiAccepted").innerText = approved.length;
+    document.getElementById("kpiRejected").innerText = rejected.length;
+    document.getElementById("kpiTotal").innerText = uniqueFiles.length;
+    document.getElementById("countVal").innerText = approved.length + rejected.length;
+
+    // Render Pending notification list
+    const notifDot = document.getElementById("notifDot");
+    const notifList = document.getElementById("notifList");
+
+    if (pending.length) {
+        notifDot.style.display = "block";
+        notifList.innerHTML = pending.map(f => `
+            <div class="request-card">
+                <h4>${f.name}</h4>
+                <span class="request-time">${f.date}</span>
+
+                <!-- ✅ ADD THIS LINE -->
+                <p style="font-size:12px; color:#1a4d2e; margin-bottom:8px;">
+                    <i class="fa-solid fa-folder"></i> 
+                    <b>Target Folder:</b> ${f.folder || "N/A"}
+                </p>
+
+                ${f.comment ? `<p style="font-size:12px; color:#475569; margin-top:8px;"><b>User:</b> ${f.comment}</p>` : ''}
+                ${(f.adminRemark || f.adminNotes) ? `<p style="font-size:12px; color:#1e293b;"><b>Admin:</b> ${f.adminRemark || f.adminNotes}</p>` : ''}
+                <textarea id="comment-${f.id}" placeholder="Add feedback for user..." 
+                    style="width:100%; margin-top:10px; padding:8px; border-radius:8px; border:1px solid #e2e8f0; font-size:11px; box-sizing:border-box; height:60px; resize:none;"></textarea>
+                <div style="display:flex; gap:8px; margin-top:12px;">
+                    <a href="${f.url}" target="_blank"
+                       style="background:#f1f5f9; color:#1a4d2e; border:none; padding:8px; border-radius:8px; flex:1; cursor:pointer; font-weight:700; font-size:10px; text-align:center; text-decoration:none;">
+                       <i class="fa-solid fa-eye"></i> VIEW
+                    </a>
+                    <button onclick="handleApproval('${f.id}','APPROVE',this)"
+                        style="background:var(--accent-green); color:white; border:none; padding:8px; border-radius:8px; flex:1; cursor:pointer; font-weight:700; font-size:10px;">
+                        ACCEPT
+                    </button>
+                    <button onclick="handleApproval('${f.id}','REJECT',this)"
+                        style="background:#ef4444; color:white; border:none; padding:8px; border-radius:8px; flex:1; cursor:pointer; font-weight:700; font-size:10px;">
+                        REJECT
+                    </button>
+                </div>
+            </div>
+        `).join("");
+    } else {
+        notifDot.style.display = "none";
+        notifList.innerHTML = '<p style="text-align:center; padding:40px; color:#94a3b8; font-size:13px;">All caught up!</p>';
+    }
+
+    // Render Approved/Rejected lists
+    const approvedContainer = document.getElementById("acceptedContainer");
+    if (approvedContainer) approvedContainer.innerHTML = approved.map(f => createFileCard(f)).join("");
+
+    const rejectedContainer = document.getElementById("rejectedContainer");
+    if (rejectedContainer) rejectedContainer.innerHTML = rejected.map(f => createFileCard(f)).join("");
+
+    // Hide bulk delete buttons initially
+    const delApproved = document.getElementById('delBtnAPPROVED');
+    const delRejected = document.getElementById('delBtnREJECTED');
+    if (delApproved) delApproved.style.display = 'none';
+    if (delRejected) delRejected.style.display = 'none';
+}
+
+async function loadFiles() {
+    if(isFetching) return;
+    isFetching = true;
+
+    const refreshIcon = document.getElementById("refreshBtn");
+    if (refreshIcon) refreshIcon.classList.add("fa-spin");
+
+    if (cachedData.length === 0) {
+        document.getElementById("acceptedContainer").innerHTML = '<p style="text-align:center; padding:20px; color:#a3b1aa;">Fetching data...</p>';
+        document.getElementById("rejectedContainer").innerHTML = '<p style="text-align:center; padding:20px; color:#a3b1aa;">Fetching data...</p>';
+    }
+
+    try {
+        const res = await fetch(SCRIPT_URL, { 
+            method: "POST", 
+            body: JSON.stringify({ 
+                action: "getRecentFiles",
+                recursive: true 
+            }) 
+        });
+        const data = await res.json();
+        if(data.success) { 
+            cachedData = data.files; 
+            renderLists(cachedData); 
+        }
+    } catch(e) { 
+        console.log("Load failed: ", e); 
+    } finally { 
+        isFetching = false; 
+        if (refreshIcon) refreshIcon.classList.remove("fa-spin");
+    }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    loadFiles();
+    startAutoRefresh(); // ✅ start optimized refresh 
+});
+</script>
+</body>
+</html>

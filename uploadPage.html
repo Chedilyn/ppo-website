@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Upload Portal | PPO</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+:root {
+  --primary-green: #1a4d2e;
+  --accent-green: #2ecc71;
+  --bg-soft: #f4f7f5;
+  --white: #ffffff;
+  --text-dark: #1a1a1a;
+  --text-muted: #64748b;
+  --error: #ff4757;
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* { box-sizing: border-box; font-family: 'Inter', sans-serif; }
+body { margin: 0; background: var(--bg-soft); color: var(--text-dark); min-height: 100vh; display: flex; flex-direction: column; }
+
+/* ===== TOASTS ===== */
+.error-toast, .success-toast {
+    position: fixed; top: 25px; right: 25px; color: white; padding: 16px 25px;
+    border-radius: 12px; display: flex; align-items: center; gap: 12px; z-index: 9999;
+    font-weight: 600; animation: slideInRight 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+.error-toast { background: var(--error); box-shadow: 0 10px 30px rgba(255, 71, 87, 0.3); }
+.success-toast { background: var(--accent-green); box-shadow: 0 10px 30px rgba(46, 204, 113, 0.35); }
+
+@keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+.shake { animation: shakeAnim 0.4s ease-in-out; }
+@keyframes shakeAnim { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 50% { transform: translateX(8px); } 75% { transform: translateX(-8px); } }
+
+.input-error { border-color: var(--error) !important; background: #fff5f5 !important; }
+
+/* ===== HEADER (UNTOUCHED LOGIC/LAYOUT) ===== */
+.header {
+    background: #ffffff; padding: 15px 5%; border-bottom: 1px solid #e2e8f0;
+    position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+    display: flex; justify-content: space-between; align-items: center;
+}
+.header-left { display: flex; align-items: center; gap: 15px; }
+.header-left img { height: 75px; width: auto; object-fit: contain; }
+.header-center { text-align: center; flex: 1; padding: 0 20px; margin-right: 150px;  }
+.header h1 {
+    font-family: 'Montserrat', sans-serif; font-size: 26px; font-weight: 800;
+    color: var(--primary-green); text-transform: uppercase; margin: 0;
+}
+.header-right { display: flex; align-items: center; gap: 15px; }
+.user-pill { 
+    display:flex; align-items:center; gap:10px; background:#e4efe8; 
+    padding:8px 16px; border-radius:999px; 
+}
+.user-pill span { font-weight:700; color:var(--primary-green); font-size:14px; }
+.profile-link { 
+    width:36px; height:36px; background:var(--primary-green); 
+    border-radius:50%; display:flex; align-items:center; 
+    justify-content:center; color:white; text-decoration:none; 
+}
+
+/* ===== MAIN LAYOUT ===== */
+.main-wrapper { 
+    flex: 1; display: grid; grid-template-columns: 1fr 350px; 
+    max-width: 1200px; margin: 40px auto; gap: 30px; padding: 0 20px; 
+}
+
+.upload-card { background: var(--white); border-radius: 24px; padding: 40px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
+.upload-card h2 { font-family: 'Montserrat', sans-serif; font-size: 28px; font-weight: 800; margin-bottom: 30px; color: var(--primary-green); }
+
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+.label { display: block; margin-bottom: 8px; font-size: 12px; font-weight: 700; color: var(--accent-green); text-transform: uppercase; }
+
+input[type="text"] { 
+    width: 100%; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 10px; 
+    color: var(--text-dark); padding: 14px 18px; outline: none; transition: var(--transition);
+}
+input[type="text"]:focus { border-color: var(--accent-green); background: #fff; }
+
+/* ===== FOLDER DROPDOWN ===== */
+.folder-trigger {
+    width: 100%; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 10px;
+    padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; cursor: pointer;
+}
+.folder-container {
+    margin-top: 8px; background: white; border-radius: 12px; box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    overflow: hidden; max-height: 0; opacity: 0; transition: var(--transition);
+    position: absolute; width: 100%; z-index: 50; border: 1px solid #e2e8f0;
+}
+.folder-container.show { max-height: 450px; opacity: 1; }
+.folder-wrapper { position: relative; }
+
+.folder-add-new { display: flex; gap: 8px; padding: 12px; background: #f1f5f9; border-bottom: 1px solid #e2e8f0; }
+.folder-add-new input { flex: 1; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; color: #1a1a1a; }
+.folder-add-new button { background: var(--accent-green); color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+
+.folder-item { display: flex; align-items: center; border-bottom: 1px solid #f1f5f9; cursor: pointer; }
+.folder-item:hover { background: #f8fafc; }
+.folder-item.active { background: #e8f5e9; color: var(--primary-green); font-weight: 700; }
+.folder-item-name { flex: 1; padding: 12px 18px; font-size: 14px; }
+.folder-chevron-btn { padding: 12px 18px; border-left: 1px solid #f1f5f9; }
+.folder-icon { transition: transform 0.3s; font-size: 10px; }
+.folder-icon.open { transform: rotate(90deg); }
+
+.subfolder-group { background: #fafafa; max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
+.subfolder-group.active { max-height: 500px; }
+.subfolder-item { padding: 10px 18px 10px 40px; font-size: 13px; cursor: pointer; border-bottom: 1px solid #f1f5f9; color: #475569; }
+.subfolder-item:hover { background: #f0fdf4; color: var(--accent-green); }
+
+/* ===== UPLOAD ZONE ===== */
+.file-drop-zone {
+    height: 140px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    border: 2px dashed #cbd5e1; border-radius: 16px; position: relative; text-align: center; transition: var(--transition);
+}
+.file-drop-zone:hover { border-color: var(--accent-green); background: #f0fdf4; }
+.file-drop-zone i { font-size: 32px; color: var(--accent-green); margin-bottom: 10px; }
+#fileInput { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+
+.file-preview { margin-top: 15px; background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; }
+.file-item-list { display: flex; flex-direction: column; padding: 10px 0; border-bottom: 1px solid #e2e8f0; }
+.file-item-list:last-child { border: none; }
+.file-item-list textarea { 
+    width: 100%; border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px; 
+    font-size: 12px; resize: none; background: #fff; margin-top: 5px;
+}
+
+.submit-btn {
+    width: 100%; padding: 18px; border-radius: 12px; border: none; font-size: 16px; font-weight: 700;
+    background: var(--accent-green); color: #fff; cursor: pointer; text-transform: uppercase; margin-top: 20px; transition: var(--transition);
+}
+.submit-btn:hover { background: var(--primary-green); transform: translateY(-2px); }
+
+/* ===== SIDEBAR ===== */
+.sidebar-info { display: flex; flex-direction: column; gap: 20px; }
+.info-card { background: var(--primary-green); color: white; padding: 25px; border-radius: 20px; }
+.info-card h3 { margin: 0 0 15px; font-size: 18px; }
+.info-card p { font-size: 13px; opacity: 0.9; line-height: 1.6; }
+.security-notice { background: white; border: 1px solid #e2e8f0; padding: 20px; border-radius: 20px; display: flex; align-items: flex-start; gap: 12px; }
+.security-notice i { color: var(--accent-green); font-size: 20px; }
+.security-notice div { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+
+/* ===== PROGRESS ===== */
+.progress-container { margin-top: 20px; display: none; }
+.progress-bar-bg { width: 100%; background: #e2e8f0; height: 12px; border-radius: 10px; overflow: hidden; margin-top: 8px; }
+.progress-bar-fill { height: 100%; background: var(--accent-green); transition: width 0.3s; }
+
+/* ===== MODAL ===== */
+.modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.9); display: none; align-items: center; justify-content: center; z-index: 2000; }
+.success-card { background: white; width: 90%; max-width: 450px; padding: 40px; border-radius: 30px; text-align: center; }
+.success-icon { width: 80px; height: 80px; background: #f0fdf4; color: var(--accent-green); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 35px; }
+.success-card h3 { font-size: 24px; margin-bottom: 10px; color: var(--primary-green); font-weight: 900; }
+.modal-btns { display: flex; gap: 15px; margin-top: 30px; }
+.m-btn { flex: 1; padding: 14px; border-radius: 10px; font-weight: 700; cursor: pointer; text-decoration: none; font-size: 13px; text-transform: uppercase; }
+.btn-again { background: var(--accent-green); color: white; border: none; }
+.btn-home { background: #f1f5f9; color: var(--text-dark); border: none; display: flex; align-items: center; justify-content: center; }
+
+@media (max-width: 900px) {
+    .main-wrapper { grid-template-columns: 1fr; }
+    .sidebar-info { order: -1; }
+    .form-row { grid-template-columns: 1fr; }
+    .header { flex-direction: column; text-align: center; }
+}
+</style>
+</head>
+<body>
+
+<header class="header">
+    <div class="header-left">
+        <img src="logo4.png" alt="Logo">
+        <img src="logo2.png" alt="Logo">
+        <img src="logo3.png" alt="Logo">
+    </div>
+    <div class="header-center">
+        <h1>Provincial Population Office</h1>
+    </div>
+    <div class="header-right">
+        <div class="user-pill">
+            <span id="userName">User</span>
+            <a href="ProfileUser.html" class="profile-link"><i class="fa-solid fa-user"></i></a>
+        </div>
+    </div>
+</header>
+
+<div class="main-wrapper">
+  <div class="upload-card">
+    <h2>Secure Document Submission</h2>
+    <form id="uploadForm">
+      <div class="form-row">
+        <div class="form-group">
+          <span class="label">MPO Full Name</span>
+          <input type="text" id="ipoName" placeholder="Juan Dela Cruz" required>
+        </div>
+        <div class="form-group">
+          <span class="label">Official Department</span>
+          <input type="text" id="departmentName" placeholder=" " required>
+        </div>
+      </div>
+
+      <div class="form-group" style="position: relative; margin-bottom: 20px;">
+        <span class="label">Destination Folder</span>
+        <div class="folder-wrapper">
+            <div class="folder-trigger" id="folderTrigger" onclick="toggleFolderList()">
+                <span id="selectedFolderName">Select destination folder...</span>
+                <i class="fa-solid fa-chevron-down" id="triggerChevron"></i>
+            </div>
+            
+            <div id="folderVisualContainer" class="folder-container">
+                <div class="folder-add-new">
+                    <input type="text" id="newFolderName" placeholder="Add new destination folder...">
+                    <button type="button" id="createFolderBtn">Add</button>
+                </div>
+                <div id="folderListScroll" style="overflow-y: auto; max-height: 300px;">
+                    <div style="padding: 20px; text-align: center; opacity: 0.5;">
+                        Loading available folders...
+                    </div>
+                </div>
+            </div>
+        </div>
+        <select id="folderTarget" required style="display:none;"></select>
+      </div>
+
+      <div class="form-group">
+        <span class="label">Attach Documents (Max 5)</span>
+        <div class="file-drop-zone">
+          <i class="fa-solid fa-file-circle-plus"></i>
+          <p id="fileText">Attach Documents (5 Maximum)</p>
+          <input type="file" id="fileInput" multiple required>
+        </div>
+        <div class="file-preview" id="filePreview">
+          <strong style="font-size: 12px;">SELECTED FILES:</strong>
+          <div id="fileList"></div>
+        </div>
+      </div>
+
+      <div class="progress-container" id="pContainer">
+        <span class="label" id="pStatus" style="font-size: 11px;">Preparing Upload...</span>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="pBar"></div>
+        </div>
+      </div>
+
+      <button type="submit" class="submit-btn">Confirm and Upload</button>
+    </form>
+  </div>
+
+  <div class="sidebar-info">
+      <div class="info-card">
+          <h3>Submission Guide</h3>
+          <p>Please ensure all fields are filled correctly. Documents uploaded here will be reviewed by the PPO Admin before final processing.</p>
+      </div>
+      <div class="security-notice">
+          <i class="fa-solid fa-shield-halved"></i>
+          <div>
+              <strong>Secure Submission</strong><br>
+              Files are encrypted during transit.
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="successModal">
+    <div class="success-card">
+        <div class="success-icon"><i class="fa-solid fa-check"></i></div>
+        <h3>SUCCESS!</h3>
+        <p>Your file has been securely submitted.</p>
+        <div class="modal-btns">
+            <button class="m-btn btn-again" onclick="closeModal()">Upload Another</button>
+            <a href="ProfileUser.html" class="m-btn btn-home">Profile</a>
+        </div>
+    </div>
+</div>
+
+<script>
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzukBdhRzbWPWLMH1hrmL7iZIL6x37aI2h6jEDAiaLp0sat212xHbmj1THFni6VpeHJ/exec"; 
+let isUploading = false;
+let selectedFiles = [];
+let finalFolderId = ""; // TRACKS THE GOOGLE DRIVE ID
+
+const fileInput = document.getElementById("fileInput");
+const filePreview = document.getElementById("filePreview");
+const fileList = document.getElementById("fileList");
+const fileText = document.getElementById("fileText");
+const folderSelect = document.getElementById("folderTarget");
+const visualFolderBox = document.getElementById("folderVisualContainer");
+const successModal = document.getElementById("successModal");
+const selectedFolderDisplay = document.getElementById("selectedFolderName");
+
+const pContainer = document.getElementById("pContainer");
+const pBar = document.getElementById("pBar");
+const pStatus = document.getElementById("pStatus");
+
+/* NEW: Custom Popup Error Function */
+function showPopupError(message) {
+    const existing = document.querySelector('.error-toast');
+    if (existing) existing.remove();
+
+    const toast = document.createElement('div');
+    toast.className = 'error-toast';
+    toast.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> <span>${message}</span>`;
+    document.body.appendChild(toast);
+
+    const card = document.querySelector('.upload-card');
+    card.classList.add('shake');
+
+    // Highlight fields if empty
+    if (!document.getElementById("ipoName").value) document.getElementById("ipoName").classList.add('input-error');
+    if (!document.getElementById("departmentName").value) document.getElementById("departmentName").classList.add('input-error');
+    if (!finalFolderId) document.getElementById("folderTrigger").classList.add('input-error');
+
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transition = '0.5s';
+        setTimeout(() => toast.remove(), 500);
+        card.classList.remove('shake');
+    }, 4000);
+}
+
+function showSuccessToast(message) {
+    const existing = document.querySelector('.success-toast');
+    if (existing) existing.remove();
+
+    const toast = document.createElement('div');
+    toast.className = 'success-toast';
+    toast.innerHTML = `<i class="fa-solid fa-circle-check"></i> <span>${message}</span>`;
+    
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transition = '0.4s';
+        setTimeout(() => toast.remove(), 400);
+    }, 3000);
+}
+
+// Remove error styling on interaction
+document.addEventListener('input', (e) => {
+    if(e.target.tagName === 'INPUT') e.target.classList.remove('input-error');
+});
+
+function toggleFolderList() {
+    document.getElementById("folderTrigger").classList.remove('input-error');
+    visualFolderBox.classList.toggle('show');
+    const chev = document.getElementById("triggerChevron");
+    chev.style.transform = visualFolderBox.classList.contains('show') ? "rotate(180deg)" : "rotate(0deg)";
+}
+
+function closeModal() {
+    successModal.style.display = "none";
+    document.getElementById("uploadForm").reset();
+    filePreview.style.display = "none";
+    fileText.textContent = "Attach Documents (5 Maximum)";
+    selectedFiles = [];
+    finalFolderId = ""; // Reset ID
+    selectedFolderDisplay.textContent = "Select destination folder...";
+    document.querySelectorAll('.folder-item').forEach(i => i.classList.remove('active'));
+    document.querySelectorAll('.subfolder-group').forEach(g => g.classList.remove('active'));
+    pContainer.style.display = "none";
+    pBar.style.width = "0%";
+}
+
+async function loadFolders() {
+  try {
+    const res = await fetch(SCRIPT_URL, {
+      method: "POST",
+      body: JSON.stringify({ action: "getSubfolders" })
+    });
+    const data = await res.json();
+    
+    if (data.success) {
+      folderSelect.innerHTML = '<option value="" disabled selected>Select folder...</option>';
+      const folderList = document.getElementById("folderListScroll");
+      folderList.innerHTML = '';
+      
+      const folders = data.folders;
+      
+      // Sort all folders alphabetically by name
+      const sortedFolders = folders.sort((a, b) => a.name.localeCompare(b.name));
+
+      const mainCategories = sortedFolders.filter(f => !f.isSubfolder && f.name !== "PENDING REVIEW");
+      const subfolders = sortedFolders.filter(f => f.isSubfolder);
+
+      mainCategories.forEach(parent => {
+          const opt = document.createElement("option");
+          opt.value = parent.name;
+          opt.dataset.id = parent.id;
+          opt.textContent = parent.name;
+          folderSelect.appendChild(opt);
+
+          const children = subfolders.filter(s => s.parentId === parent.id);
+
+          const parentRow = document.createElement("div");
+          parentRow.className = "folder-item";
+          
+          parentRow.innerHTML = `
+              <div class="folder-item-name" id="name-${parent.id}">
+                ${parent.name}
+              </div>
+              ${children.length > 0 ? `
+                <div class="folder-chevron-btn" id="chev-btn-${parent.id}">
+                  <i class="fa-solid fa-chevron-right folder-icon" id="icon-${parent.id}"></i>
+                </div>` : ''}
+          `;
+          
+          const subGroup = document.createElement("div");
+          subGroup.className = "subfolder-group";
+          subGroup.id = `group-${parent.id}`;
+
+          if (children.length > 0) {
+              const mainShortcut = document.createElement("div");
+              mainShortcut.className = "subfolder-item main-select-shortcut";
+              mainShortcut.innerHTML = `<i class="fa-solid fa-check-double"></i> Select Entire "${parent.name}" Category`;
+              mainShortcut.onclick = (e) => {
+                  e.stopPropagation();
+                  selectTargetFolder(parent.name, parent.id, mainShortcut);
+              };
+              subGroup.appendChild(mainShortcut);
+          }
+
+          children.forEach(child => {
+              const childItem = document.createElement("div");
+              childItem.className = "subfolder-item";
+              childItem.textContent = child.name;
+              childItem.onclick = (e) => {
+                  e.stopPropagation();
+                  selectTargetFolder(child.name, child.id, childItem);
+              };
+              subGroup.appendChild(childItem);
+              
+              const childOpt = document.createElement("option");
+              childOpt.value = child.name;
+              childOpt.dataset.id = child.id;
+              childOpt.textContent = `— ${child.name}`;
+              folderSelect.appendChild(childOpt);
+          });
+
+          parentRow.querySelector('.folder-item-name').onclick = (e) => {
+              e.stopPropagation();
+              selectTargetFolder(parent.name, parent.id, parentRow);
+          };
+
+          const chevBtn = parentRow.querySelector('.folder-chevron-btn');
+          if (chevBtn) {
+              chevBtn.onclick = (e) => {
+                  e.stopPropagation();
+                  const icon = document.getElementById(`icon-${parent.id}`);
+                  subGroup.classList.toggle('active');
+                  icon.classList.toggle('open');
+              };
+          }
+
+          folderList.appendChild(parentRow);
+          folderList.appendChild(subGroup);
+      });
+    }
+  } catch (err) {
+    visualFolderBox.innerHTML = '<div style="padding:20px; color:#ff5f5f;">Failed to load.</div>';
+  }
+}
+
+document.getElementById("createFolderBtn").addEventListener("click", async () => {
+    const folderNameInput = document.getElementById("newFolderName");
+    const folderName = folderNameInput.value.trim();
+    
+    if (!folderName) return showPopupError("Folder name cannot be empty.");
+
+    try {
+        // Show loading state on button
+        const addBtn = document.getElementById("createFolderBtn");
+        const originalText = addBtn.textContent;
+        addBtn.textContent = "...";
+        addBtn.disabled = true;
+
+        const payload = { action: "createFolder", folderName: folderName };
+        const res = await fetch(SCRIPT_URL, {
+            method: "POST",
+            body: JSON.stringify(payload)
+        });
+
+        const result = await res.json();
+        
+        if (!result.success) throw new Error(result.error);
+
+        // ✅ CRITICAL FIX: Update the global ID variable so the uploader knows where to go
+        finalFolderId = result.folderId; 
+        
+        // Update UI
+        selectedFolderDisplay.textContent = folderName;
+        folderSelect.value = folderName;
+        folderNameInput.value = "";
+
+        // Reload the list in the background
+        await loadFolders();
+
+        // 🔥 KEEP the selected folder AFTER reload (FIX)
+        finalFolderId = result.folderId;
+        selectedFolderDisplay.textContent = folderName;
+        folderSelect.value = folderName;
+
+        // Close dropdown and reset button
+        visualFolderBox.classList.remove('show');
+        addBtn.textContent = originalText;
+        addBtn.disabled = false;
+
+        showSuccessToast(`Folder "${folderName}" created successfully!`);
+
+    } catch (err) {
+        showPopupError("Error creating folder: " + err.message);
+        document.getElementById("createFolderBtn").disabled = false;
+        document.getElementById("createFolderBtn").textContent = "Add";
+    }
+});
+function selectTargetFolder(name, id, element) {
+    document.querySelectorAll('.folder-item, .subfolder-item').forEach(i => i.classList.remove('active'));
+    element.classList.add('active');
+    finalFolderId = id; 
+    folderSelect.value = name;
+    selectedFolderDisplay.textContent = name;
+    visualFolderBox.classList.remove('show');
+}
+
+function updateFileDisplay() {
+  if (selectedFiles.length > 0) {
+    filePreview.style.display = "block";
+    fileText.textContent = `${selectedFiles.length} file(s) selected ✓`;
+    fileList.innerHTML = "";
+
+    selectedFiles.forEach((file, index) => {
+      const item = document.createElement("div");
+      item.className = "file-item-list";
+      item.innerHTML = `
+        <div style="flex:1">
+          <span>${file.name}</span>
+          <textarea placeholder="Add Remarks..." data-index="${index}" style="width:100%; margin-top:5px; padding:6px; border-radius:6px; border:1px solid rgba(255,255,255,0.3);"></textarea>
+        </div>
+        <i class="fa-solid fa-circle-xmark remove-file" onclick="removeFile(${index})"></i>
+      `;
+      fileList.appendChild(item);
+    });
+  } else {
+    filePreview.style.display = "none";
+    fileText.textContent = "Attach Documents (5 Maximum)";
+  }
+}
+
+function removeFile(index) {
+  selectedFiles.splice(index, 1);
+  updateFileDisplay();
+}
+
+fileInput.addEventListener("change", function() {
+  const newFiles = Array.from(this.files);
+  if (newFiles.length + selectedFiles.length > 5) {
+    showPopupError("Maximum limit of 5 files reached.");
+    return;
+  }
+  selectedFiles = [...selectedFiles, ...newFiles];
+  updateFileDisplay();
+});
+
+document.getElementById("uploadForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  
+  const registeredAccount = localStorage.getItem("ppoUserName");
+  if (!registeredAccount) {
+    showPopupError("System Error: Session expired. Please re-login.");
+    return;
+  }
+
+  // 1. Added validation check for the selected files and folder
+  if (isUploading || selectedFiles.length === 0 || !finalFolderId || finalFolderId.trim() === "") {
+    showPopupError("Please fill all fields and select a destination.");
+    return;
+  }
+  
+  const ipoNameInput = document.getElementById("ipoName").value.trim().toUpperCase();
+  const deptNameInput = `[${document.getElementById("departmentName").value.trim().toUpperCase()}]`;
+  
+  isUploading = true;
+  const btn = document.querySelector(".submit-btn");
+  const originalBtnText = btn.innerText;
+  
+  btn.disabled = true;
+  btn.innerText = "UPLOADING..."; // Visual feedback
+  
+  pContainer.style.display = "block";
+  pBar.style.width = "5%";
+  pStatus.textContent = "Connecting to server...";
+
+  try {
+    for (let i = 0; i < selectedFiles.length; i++) {
+      const file = selectedFiles[i];
+      
+      // Update Progress UI
+      let progressPercent = Math.round(((i) / selectedFiles.length) * 100);
+      if(progressPercent < 5) progressPercent = 5;
+      pBar.style.width = progressPercent + "%";
+      pStatus.textContent = `Uploading (${i + 1}/${selectedFiles.length}): ${file.name}`;
+
+      // 2. Added Error handling for the FileReader
+      const base64Data = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result.split(",")[1]);
+        reader.onerror = (err) => reject(new Error("Failed to read file: " + file.name));
+        reader.readAsDataURL(file);
+      });
+
+      const textareas = fileList.querySelectorAll("textarea");
+      const comment = textareas[i]?.value.trim() || "";
+
+      console.log("DEBUG Folder ID:", finalFolderId);
+
+      const payload = { 
+          action: "uploadFile", 
+          folderId: finalFolderId || null, 
+          fileName: `${ipoNameInput}_${deptNameInput}_${file.name}`, 
+          mimeType: file.type, 
+          fileData: base64Data, 
+          user: registeredAccount,
+          comment: comment 
+      };
+
+      // 3. CRITICAL FIX: Added redirect and mode to the fetch request
+      const response = await fetch(SCRIPT_URL, { 
+        method: "POST", 
+        body: JSON.stringify(payload),
+        mode: "cors", 
+        redirect: "follow" 
+      });
+
+      if (!response.ok) throw new Error("Server responded with status: " + response.status);
+
+      const result = await response.json();
+      if (!result.success) throw new Error(result.error);
+    }
+    
+    // Final UI Finish
+    pBar.style.width = "100%";
+    pStatus.textContent = "Synchronizing with Profile...";
+    
+    setTimeout(() => {
+      successModal.style.display = "flex";
+      isUploading = false;
+      btn.disabled = false;
+      btn.innerText = originalBtnText;
+    }, 600);
+
+  } catch (err) {
+    console.error("Upload process failed:", err);
+    showPopupError("Upload Error: " + err.message);
+    
+    // 4. Reset UI so user can try again
+    isUploading = false;
+    btn.disabled = false;
+    btn.innerText = originalBtnText;
+    pContainer.style.display = "none";
+  }
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+  const userNameEl = document.getElementById("userName");
+  const registeredAccount = localStorage.getItem("ppoUserName");
+  const ipoInput = document.getElementById("ipoName");
+
+  // 1. Handle the Header Name
+  if (registeredAccount) {
+    const formattedName = registeredAccount
+      .split("@")[0]
+      .replace(/[._]/g, " ")
+      .toUpperCase();
+    userNameEl.textContent = formattedName;
+    
+    // 2. Pre-fill the input but DO NOT lock it
+    ipoInput.value = formattedName;
+  }
+
+  // 3. FORCE ENABLE: This removes any restrictions regardless of email type
+  ipoInput.readOnly = false;           // Removes the "Read Only" state
+  ipoInput.disabled = false;           // Ensures it isn't "Disabled"
+  ipoInput.removeAttribute("readonly"); // Safety double-check
+  
+  // 4. RESET STYLING: Makes it look clickable again
+  ipoInput.style.background = "#f8fafc"; 
+  ipoInput.style.cursor = "text";
+  ipoInput.style.opacity = "1";
+  ipoInput.setAttribute("required", true);
+
+  loadFolders();
+});
+window.onclick = function(event) {
+    if (!event.target.closest('.form-group')) {
+        visualFolderBox.classList.remove('show');
+    }
+}
+</script>
+</body>
+</html>
