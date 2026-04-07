@@ -51,7 +51,7 @@ const db = getFirestore(app);
 export function checkAuth() {
   onAuthStateChanged(auth, async user => {
     const page = window.location.pathname;
-    const publicPages = ["signIn.html", "signUp.html", "index.html"];
+    const publicPages = ["signin.html", "signup.html", "index.html"];
     const isPublic = publicPages.some(p => page.includes(p));
 
     if (!user) {
